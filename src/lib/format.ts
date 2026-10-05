@@ -28,7 +28,11 @@ export function formatDataQuota(mb: number): string {
  * Format data quota with quota type for display in the plan list.
  * Example: (5120, 'DAILY') -> "5 GB / ngày"
  */
-export function formatQuotaDisplay(mb: number, quotaType: string): string {
+export function formatQuotaDisplay(
+  mb: number, 
+  quotaType: string, 
+  cycleDays?: number | null
+): string {
   const dataStr = formatDataQuota(mb);
   switch (quotaType) {
     case 'DAILY':
@@ -36,7 +40,7 @@ export function formatQuotaDisplay(mb: number, quotaType: string): string {
     case 'MONTHLY':
       return `${dataStr} / tháng`;
     case 'PER_CYCLE':
-      return `${dataStr} / chu kỳ`;
+      return cycleDays ? `${dataStr} / ${cycleDays} ngày` : `${dataStr} / chu kỳ`;
     default:
       return dataStr;
   }

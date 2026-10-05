@@ -3,1061 +3,859 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-    "/plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search and paginate plans */
-        get: operations["listPlans"];
-        put?: never;
-        /** Create a plan */
-        post: operations["createPlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/plans": {
+    /** Search and paginate plans */
+    get: operations["listPlans"];
+    /** Create a plan */
+    post: operations["createPlan"];
+  };
+  "/plans/{planId}": {
+    /** Get plan details */
+    get: operations["getPlan"];
+    /**
+     * Replace plan fields and child rows
+     * @description Full replacement. Send firstCycleBonuses: [] or appQuotas: [] to remove all rows in that child collection. The isActive field is not part of this request; use PATCH /plans/{planId}/status for status changes.
+     */
+    put: operations["updatePlan"];
+    /** Delete a plan */
+    delete: operations["deletePlan"];
+    parameters: {
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    "/plans/{planId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
-        };
-        /** Get plan details */
-        get: operations["getPlan"];
-        /**
-         * Replace plan fields and child rows
-         * @description Full replacement. Send bonuses: [] or appQuotas: [] to remove all rows in that child collection. The isActive field is not part of this request; use PATCH /plans/{planId}/status for status changes.
-         */
-        put: operations["updatePlan"];
-        post?: never;
-        /** Delete a plan */
-        delete: operations["deletePlan"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  };
+  "/plans/{planId}/status": {
+    /**
+     * Set plan active status
+     * @description Idempotent state assignment; send the desired status.
+     */
+    patch: operations["updatePlanStatus"];
+    parameters: {
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    "/plans/{planId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Set plan active status
-         * @description Idempotent state assignment; send the desired status.
-         */
-        patch: operations["updatePlanStatus"];
-        trace?: never;
+  };
+  "/apps": {
+    /** List apps */
+    get: operations["listApps"];
+    /** Create an app */
+    post: operations["createApp"];
+  };
+  "/apps/{appId}": {
+    /** Replace app code and name */
+    put: operations["updateApp"];
+    /**
+     * Delete an app
+     * @description Returns APP_IN_USE if a plan app quota references this app.
+     */
+    delete: operations["deleteApp"];
+    parameters: {
+      path: {
+        appId: components["parameters"]["AppId"];
+      };
     };
-    "/apps": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List apps */
-        get: operations["listApps"];
-        put?: never;
-        /** Create an app */
-        post: operations["createApp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  };
+  "/apps/{appId}/status": {
+    /** Set app active status */
+    patch: operations["updateAppStatus"];
+    parameters: {
+      path: {
+        appId: components["parameters"]["AppId"];
+      };
     };
-    "/apps/{appId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appId: components["parameters"]["AppId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        /** Replace app code and name */
-        put: operations["updateApp"];
-        post?: never;
-        /**
-         * Delete an app
-         * @description Returns APP_IN_USE if a plan app quota references this app.
-         */
-        delete: operations["deleteApp"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  };
+  "/promo-codes": {
+    /** Search and paginate promo codes */
+    get: operations["listPromoCodes"];
+    /** Create a promo code */
+    post: operations["createPromoCode"];
+  };
+  "/promo-codes/validate": {
+    /**
+     * Validate promo against a plan
+     * @description Advisory only: this operation does not consume the promo or increment usedCount. If msisdn is supplied, existing non-cancelled uses are checked against maxUsesPerMsisdn. Plan price is read from the database.
+     */
+    post: operations["validatePromoCode"];
+  };
+  "/promo-codes/{promoId}": {
+    /** Get promo details */
+    get: operations["getPromoCode"];
+    /** Replace promo configuration and plan scope */
+    put: operations["updatePromoCode"];
+    /** Delete promo code */
+    delete: operations["deletePromoCode"];
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
     };
-    "/apps/{appId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appId: components["parameters"]["AppId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Set app active status */
-        patch: operations["updateAppStatus"];
-        trace?: never;
+  };
+  "/promo-codes/{promoId}/status": {
+    /** Set promo active status */
+    patch: operations["updatePromoStatus"];
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
     };
-    "/promo-codes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search and paginate promo codes */
-        get: operations["listPromoCodes"];
-        put?: never;
-        /** Create a promo code */
-        post: operations["createPromoCode"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/promo-codes/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Validate promo against a plan
-         * @description Advisory only: this operation does not consume the promo or increment usedCount. If msisdn is supplied, existing non-cancelled uses are checked against maxUsesPerMsisdn. Plan price is read from the database.
-         */
-        post: operations["validatePromoCode"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/promo-codes/{promoId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
-        };
-        /** Get promo details */
-        get: operations["getPromoCode"];
-        /** Replace promo configuration and plan scope */
-        put: operations["updatePromoCode"];
-        post?: never;
-        /** Delete promo code */
-        delete: operations["deletePromoCode"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/promo-codes/{promoId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Set promo active status */
-        patch: operations["updatePromoStatus"];
-        trace?: never;
-    };
+  };
 }
+
 export type webhooks = Record<string, never>;
+
 export interface components {
-    schemas: {
-        ApiError: {
-            /** @example 1101 */
-            code?: number;
-            /** @example Plan not found */
-            message?: string;
-            result?: components["schemas"]["FieldError"][];
-        };
-        FieldError: {
-            /** @example durationMonths */
-            field?: string;
-            /** @example 1106 */
-            code?: number;
-            /** @example Plan duration must be 1, 6, or 12 months */
-            message?: string;
-        };
-        Page: {
-            content: unknown[];
-            /** @example 0 */
-            page: number;
-            /** @example 20 */
-            size: number;
-            /**
-             * Format: int64
-             * @example 23
-             */
-            totalElements: number;
-            /** @example 2 */
-            totalPages: number;
-        };
-        PlanPage: components["schemas"]["Page"] & {
-            content?: components["schemas"]["PlanSummary"][];
-        };
-        AppPage: components["schemas"]["Page"] & {
-            content?: components["schemas"]["App"][];
-        };
-        PromoPage: components["schemas"]["Page"] & {
-            content?: components["schemas"]["Promo"][];
-        };
-        PlanPageEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["PlanPage"];
-        };
-        AppPageEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["AppPage"];
-        };
-        PromoPageEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["PromoPage"];
-        };
-        PlanEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["Plan"];
-        };
-        AppEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["App"];
-        };
-        PromoEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["Promo"];
-        };
-        PromoValidateEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            result?: components["schemas"]["PromoValidation"];
-        };
-        StringEnvelope: {
-            /** @example 1000 */
-            code?: number;
-            /** @example Plan has been deleted */
-            result?: string;
-        };
-        PlanCreateRequest: {
-            code: string;
-            name: string;
-            description?: string | null;
-            /** Format: int64 */
-            price: number;
-            /** @enum {integer} */
-            durationMonths: 1 | 6 | 12;
-            quotaType: components["schemas"]["QuotaType"];
-            /** Format: int64 */
-            dataQuotaMb: number;
-            cycleDays?: number | null;
-            /** @default 0 */
-            voiceMinutes?: number | null;
-            cutoffPolicy: components["schemas"]["CutoffPolicy"];
-            throttleSpeedKbps?: number | null;
-            /** @default true */
-            isActive?: boolean;
-            bonuses: components["schemas"]["BonusRequest"][];
-            appQuotas: components["schemas"]["AppQuotaRequest"][];
-        };
-        PlanUpdateRequest: {
-            code: string;
-            name: string;
-            description?: string | null;
-            /** Format: int64 */
-            price: number;
-            /** @enum {integer} */
-            durationMonths: 1 | 6 | 12;
-            quotaType: components["schemas"]["QuotaType"];
-            /** Format: int64 */
-            dataQuotaMb: number;
-            cycleDays?: number | null;
-            /** @default 0 */
-            voiceMinutes?: number | null;
-            cutoffPolicy: components["schemas"]["CutoffPolicy"];
-            throttleSpeedKbps?: number | null;
-            bonuses: components["schemas"]["BonusRequest"][];
-            appQuotas: components["schemas"]["AppQuotaRequest"][];
-        };
-        BonusRequest: {
-            /** @enum {string} */
-            bonusType: "DATA_MB" | "VOICE_MIN";
-            /** Format: int64 */
-            amount: number;
-        };
-        AppQuotaRequest: {
-            /** Format: int64 */
-            appId: number;
-            quotaType: components["schemas"]["QuotaType"];
-            /** Format: int64 */
-            quotaMb: number;
-        };
-        PlanSummary: {
-            /** Format: int64 */
-            id?: number;
-            code?: string;
-            name?: string;
-            /** Format: int64 */
-            price?: number;
-            durationMonths?: number;
-            quotaType?: components["schemas"]["QuotaType"];
-            /** Format: int64 */
-            dataQuotaMb?: number;
-            cutoffPolicy?: components["schemas"]["CutoffPolicy"];
-            isActive?: boolean;
-            /** Format: int64 */
-            appQuotaCount?: number;
-            hasBonus?: boolean;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        Plan: components["schemas"]["PlanSummary"] & {
-            description?: string | null;
-            cycleDays?: number | null;
-            voiceMinutes?: number;
-            throttleSpeedKbps?: number | null;
-            bonuses?: components["schemas"]["Bonus"][];
-            appQuotas?: components["schemas"]["AppQuota"][];
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        Bonus: {
-            /** @enum {string} */
-            bonusType?: "DATA_MB" | "VOICE_MIN";
-            /** Format: int64 */
-            amount?: number;
-        };
-        AppQuota: {
-            /** Format: int64 */
-            appId?: number;
-            appCode?: string;
-            appName?: string;
-            quotaType?: components["schemas"]["QuotaType"];
-            /** Format: int64 */
-            quotaMb?: number;
-        };
-        /** @enum {string} */
-        QuotaType: "DAILY" | "PER_CYCLE" | "MONTHLY";
-        /** @enum {string} */
-        CutoffPolicy: "DISCONNECT" | "THROTTLE";
-        AppCreateRequest: {
-            code: string;
-            name: string;
-            /** @default true */
-            isActive?: boolean;
-        };
-        AppUpdateRequest: {
-            code: string;
-            name: string;
-        };
-        StatusRequest: {
-            isActive: boolean;
-        };
-        App: {
-            /** Format: int64 */
-            id?: number;
-            code?: string;
-            name?: string;
-            isActive?: boolean;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        /** @enum {string} */
-        DiscountType: "FIXED_AMOUNT" | "PERCENT";
-        PromoCreateRequest: {
-            code: string;
-            description?: string | null;
-            discountType: components["schemas"]["DiscountType"];
-            discountValue: number;
-            /**
-             * Format: int64
-             * @description Only valid with PERCENT.
-             */
-            maxDiscountAmount?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            minOrderAmount?: number;
-            /** Format: date-time */
-            validFrom?: string | null;
-            /** Format: date-time */
-            validTo?: string | null;
-            usageLimit?: number | null;
-            maxUsesPerMsisdn?: number | null;
-            appliesToAllPlans: boolean;
-            /** @description Required and non-empty when appliesToAllPlans is false. */
-            planIds?: number[];
-        };
-        PromoUpdateRequest: components["schemas"]["PromoCreateRequest"];
-        PromoValidateRequest: {
-            code: string;
-            /** Format: int64 */
-            planId: number;
-            msisdn?: string | null;
-        };
-        Promo: {
-            /** Format: int64 */
-            id?: number;
-            code?: string;
-            description?: string | null;
-            discountType?: components["schemas"]["DiscountType"];
-            discountValue?: number;
-            /** Format: int64 */
-            maxDiscountAmount?: number | null;
-            /** Format: int64 */
-            minOrderAmount?: number;
-            /** Format: date-time */
-            validFrom?: string | null;
-            /** Format: date-time */
-            validTo?: string | null;
-            usageLimit?: number | null;
-            usedCount?: number;
-            maxUsesPerMsisdn?: number | null;
-            appliesToAllPlans?: boolean;
-            isActive?: boolean;
-            planIds?: number[] | null;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        PromoValidation: {
-            valid?: boolean;
-            /** @enum {string|null} */
-            reasonCode?: "NOT_FOUND" | "INACTIVE" | "NOT_STARTED" | "EXPIRED" | "EXHAUSTED" | "USER_LIMIT_REACHED" | "NOT_APPLICABLE" | "MIN_ORDER_NOT_MET" | null;
-            /** Format: int64 */
-            discountAmount?: number;
-            /** Format: int64 */
-            finalPrice?: number;
-        };
+  schemas: {
+    ApiError: {
+      /** @example 1101 */
+      code?: number;
+      /** @example Plan not found */
+      message?: string;
+      result?: components["schemas"]["FieldError"][];
+    };
+    FieldError: {
+      /** @example durationMonths */
+      field?: string;
+      /** @example 1106 */
+      code?: number;
+      /** @example Plan duration must be 1, 6, or 12 months */
+      message?: string;
+    };
+    Page: {
+      content: unknown[];
+      /** @example 0 */
+      page: number;
+      /** @example 20 */
+      size: number;
+      /**
+       * Format: int64
+       * @example 23
+       */
+      totalElements: number;
+      /** @example 2 */
+      totalPages: number;
+    };
+    PlanPage: components["schemas"]["Page"] & {
+      content?: components["schemas"]["PlanSummary"][];
+    };
+    AppPage: components["schemas"]["Page"] & {
+      content?: components["schemas"]["App"][];
+    };
+    PromoPage: components["schemas"]["Page"] & {
+      content?: components["schemas"]["Promo"][];
+    };
+    PlanPageEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["PlanPage"];
+    };
+    AppPageEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["AppPage"];
+    };
+    PromoPageEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["PromoPage"];
+    };
+    PlanEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["Plan"];
+    };
+    AppEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["App"];
+    };
+    PromoEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["Promo"];
+    };
+    PromoValidateEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      result?: components["schemas"]["PromoValidation"];
+    };
+    StringEnvelope: {
+      /** @example 1000 */
+      code?: number;
+      /** @example Plan has been deleted */
+      result?: string;
+    };
+    PlanCreateRequest: {
+      code: string;
+      name: string;
+      description?: string | null;
+      /** Format: int64 */
+      price: number;
+      /** @enum {integer} */
+      durationMonths: 1 | 6 | 12;
+      quotaType: components["schemas"]["QuotaType"];
+      /** Format: int64 */
+      dataQuotaMb: number;
+      cycleDays?: number | null;
+      /** @default 0 */
+      voiceMinutes?: number | null;
+      cutoffPolicy: components["schemas"]["CutoffPolicy"];
+      throttleSpeedKbps?: number | null;
+      /** @default true */
+      isActive?: boolean;
+      /** @description Bonus configuration for the first cycle only; subscription-level benefits are not represented by this API. */
+      firstCycleBonuses: components["schemas"]["BonusRequest"][];
+      appQuotas: components["schemas"]["AppQuotaRequest"][];
+    };
+    PlanUpdateRequest: {
+      code: string;
+      name: string;
+      description?: string | null;
+      /** Format: int64 */
+      price: number;
+      /** @enum {integer} */
+      durationMonths: 1 | 6 | 12;
+      quotaType: components["schemas"]["QuotaType"];
+      /** Format: int64 */
+      dataQuotaMb: number;
+      cycleDays?: number | null;
+      /** @default 0 */
+      voiceMinutes?: number | null;
+      cutoffPolicy: components["schemas"]["CutoffPolicy"];
+      throttleSpeedKbps?: number | null;
+      /** @description Replaces the first-cycle bonus configuration only. Subscription-level benefits are deferred. */
+      firstCycleBonuses: components["schemas"]["BonusRequest"][];
+      appQuotas: components["schemas"]["AppQuotaRequest"][];
+    };
+    /** @description Bonus configured for the first cycle only. */
+    BonusRequest: {
+      /** @enum {string} */
+      bonusType: "DATA_MB" | "VOICE_MIN";
+      /** Format: int64 */
+      amount: number;
+    };
+    AppQuotaRequest: {
+      /** Format: int64 */
+      appId: number;
+      quotaType: components["schemas"]["QuotaType"];
+      /** Format: int64 */
+      quotaMb: number;
+    };
+    PlanSummary: {
+      /** Format: int64 */
+      id?: number;
+      code?: string;
+      name?: string;
+      /** Format: int64 */
+      price?: number;
+      durationMonths?: number;
+      quotaType?: components["schemas"]["QuotaType"];
+      /** Format: int64 */
+      dataQuotaMb?: number;
+      /** @description Cycle length in days for PER_CYCLE plans; null for other quota types. */
+      cycleDays?: number | null;
+      isActive?: boolean;
+    };
+    Plan: components["schemas"]["PlanSummary"] & ({
+      description?: string | null;
+      cutoffPolicy?: components["schemas"]["CutoffPolicy"];
+      voiceMinutes?: number;
+      throttleSpeedKbps?: number | null;
+      bonuses?: components["schemas"]["Bonus"][];
+      appQuotas?: components["schemas"]["AppQuota"][];
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      updatedAt?: string;
+    });
+    Bonus: {
+      /** @enum {string} */
+      bonusType?: "DATA_MB" | "VOICE_MIN";
+      /** Format: int64 */
+      amount?: number;
+    };
+    AppQuota: {
+      /** Format: int64 */
+      appId?: number;
+      appCode?: string;
+      appName?: string;
+      quotaType?: components["schemas"]["QuotaType"];
+      /** Format: int64 */
+      quotaMb?: number;
+    };
+    /** @enum {string} */
+    QuotaType: "DAILY" | "PER_CYCLE" | "MONTHLY";
+    /** @enum {string} */
+    CutoffPolicy: "DISCONNECT" | "THROTTLE";
+    AppCreateRequest: {
+      code: string;
+      name: string;
+      /** @default true */
+      isActive?: boolean;
+    };
+    AppUpdateRequest: {
+      code: string;
+      name: string;
+    };
+    StatusRequest: {
+      isActive: boolean;
+    };
+    App: {
+      /** Format: int64 */
+      id?: number;
+      code?: string;
+      name?: string;
+      isActive?: boolean;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      updatedAt?: string;
+    };
+    /** @enum {string} */
+    DiscountType: "FIXED_AMOUNT" | "PERCENT";
+    PromoCreateRequest: {
+      code: string;
+      description?: string | null;
+      discountType: components["schemas"]["DiscountType"];
+      discountValue: number;
+      /**
+       * Format: int64
+       * @description Only valid with PERCENT.
+       */
+      maxDiscountAmount?: number | null;
+      /**
+       * Format: int64
+       * @default 0
+       */
+      minOrderAmount?: number;
+      /** Format: date-time */
+      validFrom?: string | null;
+      /** Format: date-time */
+      validTo?: string | null;
+      usageLimit?: number | null;
+      maxUsesPerMsisdn?: number | null;
+      appliesToAllPlans: boolean;
+      /** @description Required and non-empty when appliesToAllPlans is false. */
+      planIds?: number[];
+    };
+    PromoUpdateRequest: components["schemas"]["PromoCreateRequest"];
+    PromoValidateRequest: {
+      code: string;
+      /** Format: int64 */
+      planId: number;
+      msisdn?: string | null;
+    };
+    Promo: {
+      /** Format: int64 */
+      id?: number;
+      code?: string;
+      description?: string | null;
+      discountType?: components["schemas"]["DiscountType"];
+      discountValue?: number;
+      /** Format: int64 */
+      maxDiscountAmount?: number | null;
+      /** Format: int64 */
+      minOrderAmount?: number;
+      /** Format: date-time */
+      validFrom?: string | null;
+      /** Format: date-time */
+      validTo?: string | null;
+      usageLimit?: number | null;
+      usedCount?: number;
+      maxUsesPerMsisdn?: number | null;
+      appliesToAllPlans?: boolean;
+      isActive?: boolean;
+      planIds?: number[] | null;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      updatedAt?: string;
+    };
+    PromoValidation: {
+      valid?: boolean;
+      /** @enum {string|null} */
+      reasonCode?: "NOT_FOUND" | "INACTIVE" | "NOT_STARTED" | "EXPIRED" | "EXHAUSTED" | "USER_LIMIT_REACHED" | "NOT_APPLICABLE" | "MIN_ORDER_NOT_MET" | null;
+      /** Format: int64 */
+      discountAmount?: number;
+      /** Format: int64 */
+      finalPrice?: number;
+    };
+  };
+  responses: {
+    /** @description Invalid request, validation error, or invalid page/sort. */
+    BadRequest: {
+      content: {
+        "application/json": components["schemas"]["ApiError"];
+      };
+    };
+    /** @description Requested resource does not exist. */
+    NotFound: {
+      content: {
+        "application/json": components["schemas"]["ApiError"];
+      };
+    };
+    /** @description Duplicate code or resource is still in use. */
+    Conflict: {
+      content: {
+        "application/json": components["schemas"]["ApiError"];
+      };
+    };
+  };
+  parameters: {
+    IsActive?: boolean;
+    Page?: number;
+    Size?: number;
+    PlanId: number;
+    AppId: number;
+    PromoId: number;
+  };
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
+}
+
+export type $defs = Record<string, never>;
+
+export type external = Record<string, never>;
+
+export interface operations {
+
+  /** Search and paginate plans */
+  listPlans: {
+    parameters: {
+      query?: {
+        isActive?: components["parameters"]["IsActive"];
+        /** @description Case-insensitive substring of plan code or name. */
+        keyword?: string;
+        durationMonths?: 1 | 6 | 12;
+        page?: components["parameters"]["Page"];
+        size?: components["parameters"]["Size"];
+        /** @description One allowlisted property and direction. Defaults to createdAt,desc. id,asc is appended as a stable tie-breaker; id is not currently an allowed primary sort field. */
+        sort?: "createdAt,asc" | "createdAt,desc" | "name,asc" | "name,desc" | "code,asc" | "code,desc" | "price,asc" | "price,desc" | "durationMonths,asc" | "durationMonths,desc";
+      };
     };
     responses: {
-        /** @description Invalid request, validation error, or invalid page/sort. */
-        BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ApiError"];
-            };
+      /** @description Page of matching plan summaries. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlanPageEnvelope"];
         };
-        /** @description Requested resource does not exist. */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ApiError"];
-            };
-        };
-        /** @description Duplicate code or resource is still in use. */
-        Conflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ApiError"];
-            };
-        };
+      };
+      400: components["responses"]["BadRequest"];
     };
+  };
+  /** Create a plan */
+  createPlan: {
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "code": "DEMO_5GB",
+         *   "name": "Demo 5GB",
+         *   "price": 120000,
+         *   "durationMonths": 1,
+         *   "quotaType": "DAILY",
+         *   "dataQuotaMb": 5120,
+         *   "voiceMinutes": 100,
+         *   "cutoffPolicy": "THROTTLE",
+         *   "throttleSpeedKbps": 512,
+         *   "isActive": true,
+         *   "firstCycleBonuses": [],
+         *   "appQuotas": []
+         * }
+         */
+        "application/json": components["schemas"]["PlanCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Plan created. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlanEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      409: components["responses"]["Conflict"];
+    };
+  };
+  /** Get plan details */
+  getPlan: {
     parameters: {
-        IsActive: boolean;
-        Page: number;
-        Size: number;
-        PlanId: number;
-        AppId: number;
-        PromoId: number;
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
-}
-export type $defs = Record<string, never>;
-export interface operations {
-    listPlans: {
-        parameters: {
-            query?: {
-                isActive?: components["parameters"]["IsActive"];
-                /** @description Case-insensitive substring of plan code or name. */
-                keyword?: string;
-                durationMonths?: 1 | 6 | 12;
-                page?: components["parameters"]["Page"];
-                size?: components["parameters"]["Size"];
-                /** @description One allowlisted property and direction. Defaults to createdAt,desc. id,asc is appended as a stable tie-breaker; id is not currently an allowed primary sort field. */
-                sort?: "createdAt,asc" | "createdAt,desc" | "name,asc" | "name,desc" | "code,asc" | "code,desc" | "price,asc" | "price,desc" | "durationMonths,asc" | "durationMonths,desc";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Plan details, including bonus and app quota rows. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlanEnvelope"];
         };
-        requestBody?: never;
-        responses: {
-            /** @description Page of matching plan summaries. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanPageEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-        };
+      };
+      404: components["responses"]["NotFound"];
     };
-    createPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "code": "DEMO_5GB",
-                 *       "name": "Demo 5GB",
-                 *       "price": 120000,
-                 *       "durationMonths": 1,
-                 *       "quotaType": "DAILY",
-                 *       "dataQuotaMb": 5120,
-                 *       "voiceMinutes": 100,
-                 *       "cutoffPolicy": "THROTTLE",
-                 *       "throttleSpeedKbps": 512,
-                 *       "isActive": true,
-                 *       "bonuses": [],
-                 *       "appQuotas": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["PlanCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Plan created. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            409: components["responses"]["Conflict"];
-        };
+  };
+  /**
+   * Replace plan fields and child rows
+   * @description Full replacement. Send firstCycleBonuses: [] or appQuotas: [] to remove all rows in that child collection. The isActive field is not part of this request; use PATCH /plans/{planId}/status for status changes.
+   */
+  updatePlan: {
+    parameters: {
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    getPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Plan details, including bonus and app quota rows. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanEnvelope"];
-                };
-            };
-            404: components["responses"]["NotFound"];
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PlanUpdateRequest"];
+      };
     };
-    updatePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description Plan updated. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlanEnvelope"];
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Plan updated. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
     };
-    deletePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Plan deleted. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StringEnvelope"];
-                };
-            };
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+  };
+  /** Delete a plan */
+  deletePlan: {
+    parameters: {
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    updatePlanStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: components["parameters"]["PlanId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description Plan deleted. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["StringEnvelope"];
         };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "isActive": false
-                 *     }
-                 */
-                "application/json": components["schemas"]["StatusRequest"];
-            };
-        };
-        responses: {
-            /** @description Updated plan. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-        };
+      };
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
     };
-    listApps: {
-        parameters: {
-            query?: {
-                isActive?: components["parameters"]["IsActive"];
-                page?: components["parameters"]["Page"];
-                size?: components["parameters"]["Size"];
-                sort?: "createdAt,asc" | "createdAt,desc" | "name,asc" | "name,desc" | "code,asc" | "code,desc";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Page of apps. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppPageEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-        };
+  };
+  /**
+   * Set plan active status
+   * @description Idempotent state assignment; send the desired status.
+   */
+  updatePlanStatus: {
+    parameters: {
+      path: {
+        planId: components["parameters"]["PlanId"];
+      };
     };
-    createApp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "code": "CHAT_APP",
-                 *       "name": "Chat App",
-                 *       "isActive": true
-                 *     }
-                 */
-                "application/json": components["schemas"]["AppCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description App created. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            409: components["responses"]["Conflict"];
-        };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "isActive": false
+         * }
+         */
+        "application/json": components["schemas"]["StatusRequest"];
+      };
     };
-    updateApp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appId: components["parameters"]["AppId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description Updated plan. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlanEnvelope"];
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AppUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description App updated. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
     };
-    deleteApp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appId: components["parameters"]["AppId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description App deleted. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StringEnvelope"];
-                };
-            };
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+  };
+  /** List apps */
+  listApps: {
+    parameters: {
+      query?: {
+        isActive?: components["parameters"]["IsActive"];
+        page?: components["parameters"]["Page"];
+        size?: components["parameters"]["Size"];
+        sort?: "createdAt,asc" | "createdAt,desc" | "name,asc" | "name,desc" | "code,asc" | "code,desc";
+      };
     };
-    updateAppStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appId: components["parameters"]["AppId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description Page of apps. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["AppPageEnvelope"];
         };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "isActive": false
-                 *     }
-                 */
-                "application/json": components["schemas"]["StatusRequest"];
-            };
-        };
-        responses: {
-            /** @description Updated app. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-        };
+      };
+      400: components["responses"]["BadRequest"];
     };
-    listPromoCodes: {
-        parameters: {
-            query?: {
-                isActive?: components["parameters"]["IsActive"];
-                keyword?: string;
-                page?: components["parameters"]["Page"];
-                size?: components["parameters"]["Size"];
-                sort?: "createdAt,asc" | "createdAt,desc" | "code,asc" | "code,desc" | "validFrom,asc" | "validFrom,desc" | "validTo,asc" | "validTo,desc";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Page of promo codes. Plan IDs are omitted from list rows. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoPageEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-        };
+  };
+  /** Create an app */
+  createApp: {
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "code": "CHAT_APP",
+         *   "name": "Chat App",
+         *   "isActive": true
+         * }
+         */
+        "application/json": components["schemas"]["AppCreateRequest"];
+      };
     };
-    createPromoCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description App created. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["AppEnvelope"];
         };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "code": "SAVE10",
-                 *       "description": "10,000 VND off",
-                 *       "discountType": "FIXED_AMOUNT",
-                 *       "discountValue": 10000,
-                 *       "minOrderAmount": 50000,
-                 *       "usageLimit": 100,
-                 *       "maxUsesPerMsisdn": 1,
-                 *       "appliesToAllPlans": true
-                 *     }
-                 */
-                "application/json": components["schemas"]["PromoCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Promo created. usedCount starts at zero. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            409: components["responses"]["Conflict"];
-        };
+      };
+      400: components["responses"]["BadRequest"];
+      409: components["responses"]["Conflict"];
     };
-    validatePromoCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "code": "SAVE10",
-                 *       "planId": 1,
-                 *       "msisdn": "0912345678"
-                 *     }
-                 */
-                "application/json": components["schemas"]["PromoValidateRequest"];
-            };
-        };
-        responses: {
-            /** @description Both eligible and ineligible promo results return HTTP 200. Read result.valid and result.reasonCode. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoValidateEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  /** Replace app code and name */
+  updateApp: {
+    parameters: {
+      path: {
+        appId: components["parameters"]["AppId"];
+      };
     };
-    getPromoCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Promo details, including applicable plan IDs. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoEnvelope"];
-                };
-            };
-            404: components["responses"]["NotFound"];
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AppUpdateRequest"];
+      };
     };
-    updatePromoCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description App updated. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["AppEnvelope"];
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PromoUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Promo updated. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
     };
-    deletePromoCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Promo deleted. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StringEnvelope"];
-                };
-            };
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
+  };
+  /**
+   * Delete an app
+   * @description Returns APP_IN_USE if a plan app quota references this app.
+   */
+  deleteApp: {
+    parameters: {
+      path: {
+        appId: components["parameters"]["AppId"];
+      };
     };
-    updatePromoStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                promoId: components["parameters"]["PromoId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description App deleted. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["StringEnvelope"];
         };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "isActive": false
-                 *     }
-                 */
-                "application/json": components["schemas"]["StatusRequest"];
-            };
-        };
-        responses: {
-            /** @description Updated promo. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PromoEnvelope"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            404: components["responses"]["NotFound"];
-        };
+      };
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
     };
+  };
+  /** Set app active status */
+  updateAppStatus: {
+    parameters: {
+      path: {
+        appId: components["parameters"]["AppId"];
+      };
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "isActive": false
+         * }
+         */
+        "application/json": components["schemas"]["StatusRequest"];
+      };
+    };
+    responses: {
+      /** @description Updated app. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["AppEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /** Search and paginate promo codes */
+  listPromoCodes: {
+    parameters: {
+      query?: {
+        isActive?: components["parameters"]["IsActive"];
+        keyword?: string;
+        page?: components["parameters"]["Page"];
+        size?: components["parameters"]["Size"];
+        sort?: "createdAt,asc" | "createdAt,desc" | "code,asc" | "code,desc" | "validFrom,asc" | "validFrom,desc" | "validTo,asc" | "validTo,desc";
+      };
+    };
+    responses: {
+      /** @description Page of promo codes. Plan IDs are omitted from list rows. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoPageEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+    };
+  };
+  /** Create a promo code */
+  createPromoCode: {
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "code": "SAVE10",
+         *   "description": "10,000 VND off",
+         *   "discountType": "FIXED_AMOUNT",
+         *   "discountValue": 10000,
+         *   "minOrderAmount": 50000,
+         *   "usageLimit": 100,
+         *   "maxUsesPerMsisdn": 1,
+         *   "appliesToAllPlans": true
+         * }
+         */
+        "application/json": components["schemas"]["PromoCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Promo created. usedCount starts at zero. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      409: components["responses"]["Conflict"];
+    };
+  };
+  /**
+   * Validate promo against a plan
+   * @description Advisory only: this operation does not consume the promo or increment usedCount. If msisdn is supplied, existing non-cancelled uses are checked against maxUsesPerMsisdn. Plan price is read from the database.
+   */
+  validatePromoCode: {
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "code": "SAVE10",
+         *   "planId": 1,
+         *   "msisdn": "0912345678"
+         * }
+         */
+        "application/json": components["schemas"]["PromoValidateRequest"];
+      };
+    };
+    responses: {
+      /** @description Both eligible and ineligible promo results return HTTP 200. Read result.valid and result.reasonCode. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoValidateEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /** Get promo details */
+  getPromoCode: {
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
+    };
+    responses: {
+      /** @description Promo details, including applicable plan IDs. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoEnvelope"];
+        };
+      };
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /** Replace promo configuration and plan scope */
+  updatePromoCode: {
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PromoUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Promo updated. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
+    };
+  };
+  /** Delete promo code */
+  deletePromoCode: {
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
+    };
+    responses: {
+      /** @description Promo deleted. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["StringEnvelope"];
+        };
+      };
+      404: components["responses"]["NotFound"];
+      409: components["responses"]["Conflict"];
+    };
+  };
+  /** Set promo active status */
+  updatePromoStatus: {
+    parameters: {
+      path: {
+        promoId: components["parameters"]["PromoId"];
+      };
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *   "isActive": false
+         * }
+         */
+        "application/json": components["schemas"]["StatusRequest"];
+      };
+    };
+    responses: {
+      /** @description Updated promo. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromoEnvelope"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      404: components["responses"]["NotFound"];
+    };
+  };
 }

@@ -78,7 +78,7 @@ paths:
               cutoffPolicy: THROTTLE
               throttleSpeedKbps: 512
               isActive: true
-              bonuses: []
+              firstCycleBonuses: []
               appQuotas: []
       responses:
         '200':
@@ -108,7 +108,7 @@ paths:
       operationId: updatePlan
       summary: Replace plan fields and child rows
       description: >-
-        Full replacement. Send bonuses: [] or appQuotas: [] to remove all rows
+        Full replacement. Send firstCycleBonuses: [] or appQuotas: [] to remove all rows
         in that child collection. The isActive field is not part of this request;
         use PATCH /plans/{planId}/status for status changes.
       requestBody:
@@ -539,7 +539,7 @@ components:
         result: { type: string, example: Plan has been deleted }
     PlanCreateRequest:
       type: object
-      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, bonuses, appQuotas]
+      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, firstCycleBonuses, appQuotas]
       properties:
         code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
         name: { type: string, minLength: 2, maxLength: 150 }
@@ -553,9 +553,10 @@ components:
         cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
         throttleSpeedKbps: { type: integer, minimum: 1, nullable: true }
         isActive: { type: boolean, default: true }
-        bonuses:
+        firstCycleBonuses:
           type: array
           maxItems: 2
+          description: Bonus configuration for the first cycle only; subscription-level benefits are not represented by this API.
           items: { $ref: '#/components/schemas/BonusRequest' }
         appQuotas:
           type: array
@@ -563,7 +564,7 @@ components:
           items: { $ref: '#/components/schemas/AppQuotaRequest' }
     PlanUpdateRequest:
       type: object
-      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, bonuses, appQuotas]
+      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, firstCycleBonuses, appQuotas]
       properties:
         code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
         name: { type: string, minLength: 2, maxLength: 150 }
@@ -576,9 +577,10 @@ components:
         voiceMinutes: { type: integer, minimum: 0, nullable: true, default: 0 }
         cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
         throttleSpeedKbps: { type: integer, minimum: 1, nullable: true }
-        bonuses:
+        firstCycleBonuses:
           type: array
           maxItems: 2
+          description: Replaces the first-cycle bonus configuration only. Subscription-level benefits are deferred.
           items: { $ref: '#/components/schemas/BonusRequest' }
         appQuotas:
           type: array
@@ -586,6 +588,7 @@ components:
           items: { $ref: '#/components/schemas/AppQuotaRequest' }
     BonusRequest:
       type: object
+      description: Bonus configured for the first cycle only.
       required: [bonusType, amount]
       properties:
         bonusType: { type: string, enum: [DATA_MB, VOICE_MIN] }
@@ -607,18 +610,18 @@ components:
         durationMonths: { type: integer }
         quotaType: { $ref: '#/components/schemas/QuotaType' }
         dataQuotaMb: { type: integer, format: int64 }
-        cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
+        cycleDays:
+          type: integer
+          nullable: true
+          description: Cycle length in days for PER_CYCLE plans; null for other quota types.
         isActive: { type: boolean }
-        appQuotaCount: { type: integer, format: int64 }
-        hasBonus: { type: boolean }
-        createdAt: { type: string, format: date-time }
     Plan:
       allOf:
         - $ref: '#/components/schemas/PlanSummary'
         - type: object
           properties:
             description: { type: string, nullable: true }
-            cycleDays: { type: integer, nullable: true }
+            cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
             voiceMinutes: { type: integer }
             throttleSpeedKbps: { type: integer, nullable: true }
             bonuses:
@@ -627,6 +630,7 @@ components:
             appQuotas:
               type: array
               items: { $ref: '#/components/schemas/AppQuota' }
+            createdAt: { type: string, format: date-time }
             updatedAt: { type: string, format: date-time }
     Bonus:
       type: object
