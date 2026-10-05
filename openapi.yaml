@@ -1,0 +1,738 @@
+openapi: 3.0.3
+info:
+  title: AdminSky MVNO Plan Service API
+  version: 1.0.0
+  description: >-
+    OpenAPI contract for the currently implemented Plans, Apps and Promo Codes APIs.
+    All successful operations return HTTP 200 and an ApiResponse envelope.
+    This API is currently unauthenticated; operations declare an empty security list.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Docker Compose
+security: []
+tags:
+  - name: Plans
+  - name: Apps
+  - name: Promo Codes
+paths:
+  /plans:
+    get:
+      tags: [Plans]
+      operationId: listPlans
+      summary: Search and paginate plans
+      parameters:
+        - $ref: '#/components/parameters/IsActive'
+        - name: keyword
+          in: query
+          description: Case-insensitive substring of plan code or name.
+          schema: { type: string }
+        - name: durationMonths
+          in: query
+          schema: { type: integer, enum: [1, 6, 12] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: sort
+          in: query
+          description: >-
+            One allowlisted property and direction. Defaults to createdAt,desc.
+            id,asc is appended as a stable tie-breaker; id is not currently an
+            allowed primary sort field.
+          schema:
+            type: string
+            default: createdAt,desc
+            enum:
+              - createdAt,asc
+              - createdAt,desc
+              - name,asc
+              - name,desc
+              - code,asc
+              - code,desc
+              - price,asc
+              - price,desc
+              - durationMonths,asc
+              - durationMonths,desc
+      responses:
+        '200':
+          description: Page of matching plan summaries.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanPageEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Plans]
+      operationId: createPlan
+      summary: Create a plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlanCreateRequest' }
+            example:
+              code: DEMO_5GB
+              name: Demo 5GB
+              price: 120000
+              durationMonths: 1
+              quotaType: DAILY
+              dataQuotaMb: 5120
+              voiceMinutes: 100
+              cutoffPolicy: THROTTLE
+              throttleSpeedKbps: 512
+              isActive: true
+              bonuses: []
+              appQuotas: []
+      responses:
+        '200':
+          description: Plan created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /plans/{planId}:
+    parameters:
+      - $ref: '#/components/parameters/PlanId'
+    get:
+      tags: [Plans]
+      operationId: getPlan
+      summary: Get plan details
+      responses:
+        '200':
+          description: Plan details, including bonus and app quota rows.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Plans]
+      operationId: updatePlan
+      summary: Replace plan fields and child rows
+      description: >-
+        Full replacement. Send bonuses: [] or appQuotas: [] to remove all rows
+        in that child collection. The isActive field is not part of this request;
+        use PATCH /plans/{planId}/status for status changes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlanUpdateRequest' }
+      responses:
+        '200':
+          description: Plan updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Plans]
+      operationId: deletePlan
+      summary: Delete a plan
+      responses:
+        '200':
+          description: Plan deleted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StringEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /plans/{planId}/status:
+    parameters:
+      - $ref: '#/components/parameters/PlanId'
+    patch:
+      tags: [Plans]
+      operationId: updatePlanStatus
+      summary: Set plan active status
+      description: Idempotent state assignment; send the desired status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StatusRequest' }
+            example: { isActive: false }
+      responses:
+        '200':
+          description: Updated plan.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /apps:
+    get:
+      tags: [Apps]
+      operationId: listApps
+      summary: List apps
+      parameters:
+        - $ref: '#/components/parameters/IsActive'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt,desc
+            enum: ["createdAt,asc", "createdAt,desc", "name,asc", "name,desc", "code,asc", "code,desc"]
+      responses:
+        '200':
+          description: Page of apps.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppPageEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Apps]
+      operationId: createApp
+      summary: Create an app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppCreateRequest' }
+            example: { code: CHAT_APP, name: Chat App, isActive: true }
+      responses:
+        '200':
+          description: App created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /apps/{appId}:
+    parameters:
+      - $ref: '#/components/parameters/AppId'
+    put:
+      tags: [Apps]
+      operationId: updateApp
+      summary: Replace app code and name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppUpdateRequest' }
+      responses:
+        '200':
+          description: App updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Apps]
+      operationId: deleteApp
+      summary: Delete an app
+      description: Returns APP_IN_USE if a plan app quota references this app.
+      responses:
+        '200':
+          description: App deleted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StringEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /apps/{appId}/status:
+    parameters:
+      - $ref: '#/components/parameters/AppId'
+    patch:
+      tags: [Apps]
+      operationId: updateAppStatus
+      summary: Set app active status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StatusRequest' }
+            example: { isActive: false }
+      responses:
+        '200':
+          description: Updated app.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /promo-codes:
+    get:
+      tags: [Promo Codes]
+      operationId: listPromoCodes
+      summary: Search and paginate promo codes
+      parameters:
+        - $ref: '#/components/parameters/IsActive'
+        - name: keyword
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt,desc
+            enum: ["createdAt,asc", "createdAt,desc", "code,asc", "code,desc", "validFrom,asc", "validFrom,desc", "validTo,asc", "validTo,desc"]
+      responses:
+        '200':
+          description: Page of promo codes. Plan IDs are omitted from list rows.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoPageEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Promo Codes]
+      operationId: createPromoCode
+      summary: Create a promo code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromoCreateRequest' }
+            example:
+              code: SAVE10
+              description: 10,000 VND off
+              discountType: FIXED_AMOUNT
+              discountValue: 10000
+              minOrderAmount: 50000
+              usageLimit: 100
+              maxUsesPerMsisdn: 1
+              appliesToAllPlans: true
+      responses:
+        '200':
+          description: Promo created. usedCount starts at zero.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /promo-codes/validate:
+    post:
+      tags: [Promo Codes]
+      operationId: validatePromoCode
+      summary: Validate promo against a plan
+      description: >-
+        Advisory only: this operation does not consume the promo or increment
+        usedCount. If msisdn is supplied, existing non-cancelled uses are checked
+        against maxUsesPerMsisdn. Plan price is read from the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromoValidateRequest' }
+            example: { code: SAVE10, planId: 1, msisdn: '0912345678' }
+      responses:
+        '200':
+          description: >-
+            Both eligible and ineligible promo results return HTTP 200. Read
+            result.valid and result.reasonCode.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoValidateEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /promo-codes/{promoId}:
+    parameters:
+      - $ref: '#/components/parameters/PromoId'
+    get:
+      tags: [Promo Codes]
+      operationId: getPromoCode
+      summary: Get promo details
+      responses:
+        '200':
+          description: Promo details, including applicable plan IDs.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Promo Codes]
+      operationId: updatePromoCode
+      summary: Replace promo configuration and plan scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromoUpdateRequest' }
+      responses:
+        '200':
+          description: Promo updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Promo Codes]
+      operationId: deletePromoCode
+      summary: Delete promo code
+      responses:
+        '200':
+          description: Promo deleted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StringEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /promo-codes/{promoId}/status:
+    parameters:
+      - $ref: '#/components/parameters/PromoId'
+    patch:
+      tags: [Promo Codes]
+      operationId: updatePromoStatus
+      summary: Set promo active status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StatusRequest' }
+            example: { isActive: false }
+      responses:
+        '200':
+          description: Updated promo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromoEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  parameters:
+    IsActive:
+      name: isActive
+      in: query
+      schema: { type: boolean }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 0, default: 0 }
+    Size:
+      name: size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    PlanId:
+      name: planId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    AppId:
+      name: appId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    PromoId:
+      name: promoId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+  responses:
+    BadRequest:
+      description: Invalid request, validation error, or invalid page/sort.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    NotFound:
+      description: Requested resource does not exist.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Conflict:
+      description: Duplicate code or resource is still in use.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        code: { type: integer, example: 1101 }
+        message: { type: string, example: Plan not found }
+        result:
+          type: array
+          items: { $ref: '#/components/schemas/FieldError' }
+    FieldError:
+      type: object
+      properties:
+        field: { type: string, example: durationMonths }
+        code: { type: integer, example: 1106 }
+        message: { type: string, example: "Plan duration must be 1, 6, or 12 months" }
+    Page:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content: { type: array, items: {} }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 20 }
+        totalElements: { type: integer, format: int64, example: 23 }
+        totalPages: { type: integer, example: 2 }
+    PlanPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items: { $ref: '#/components/schemas/PlanSummary' }
+    AppPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items: { $ref: '#/components/schemas/App' }
+    PromoPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items: { $ref: '#/components/schemas/Promo' }
+    PlanPageEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/PlanPage' }
+    AppPageEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/AppPage' }
+    PromoPageEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/PromoPage' }
+    PlanEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/Plan' }
+    AppEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/App' }
+    PromoEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/Promo' }
+    PromoValidateEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { $ref: '#/components/schemas/PromoValidation' }
+    StringEnvelope:
+      type: object
+      properties:
+        code: { type: integer, example: 1000 }
+        result: { type: string, example: Plan has been deleted }
+    PlanCreateRequest:
+      type: object
+      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, bonuses, appQuotas]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        name: { type: string, minLength: 2, maxLength: 150 }
+        description: { type: string, maxLength: 1000, nullable: true }
+        price: { type: integer, format: int64, minimum: 0, maximum: 999999999999 }
+        durationMonths: { type: integer, enum: [1, 6, 12] }
+        quotaType: { $ref: '#/components/schemas/QuotaType' }
+        dataQuotaMb: { type: integer, format: int64, minimum: 1 }
+        cycleDays: { type: integer, minimum: 1, maximum: 32767, nullable: true }
+        voiceMinutes: { type: integer, minimum: 0, nullable: true, default: 0 }
+        cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
+        throttleSpeedKbps: { type: integer, minimum: 1, nullable: true }
+        isActive: { type: boolean, default: true }
+        bonuses:
+          type: array
+          maxItems: 2
+          items: { $ref: '#/components/schemas/BonusRequest' }
+        appQuotas:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/AppQuotaRequest' }
+    PlanUpdateRequest:
+      type: object
+      required: [code, name, price, durationMonths, quotaType, dataQuotaMb, cutoffPolicy, bonuses, appQuotas]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        name: { type: string, minLength: 2, maxLength: 150 }
+        description: { type: string, maxLength: 1000, nullable: true }
+        price: { type: integer, format: int64, minimum: 0, maximum: 999999999999 }
+        durationMonths: { type: integer, enum: [1, 6, 12] }
+        quotaType: { $ref: '#/components/schemas/QuotaType' }
+        dataQuotaMb: { type: integer, format: int64, minimum: 1 }
+        cycleDays: { type: integer, minimum: 1, maximum: 32767, nullable: true }
+        voiceMinutes: { type: integer, minimum: 0, nullable: true, default: 0 }
+        cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
+        throttleSpeedKbps: { type: integer, minimum: 1, nullable: true }
+        bonuses:
+          type: array
+          maxItems: 2
+          items: { $ref: '#/components/schemas/BonusRequest' }
+        appQuotas:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/AppQuotaRequest' }
+    BonusRequest:
+      type: object
+      required: [bonusType, amount]
+      properties:
+        bonusType: { type: string, enum: [DATA_MB, VOICE_MIN] }
+        amount: { type: integer, format: int64, minimum: 1 }
+    AppQuotaRequest:
+      type: object
+      required: [appId, quotaType, quotaMb]
+      properties:
+        appId: { type: integer, format: int64 }
+        quotaType: { $ref: '#/components/schemas/QuotaType' }
+        quotaMb: { type: integer, format: int64, minimum: 1 }
+    PlanSummary:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        price: { type: integer, format: int64 }
+        durationMonths: { type: integer }
+        quotaType: { $ref: '#/components/schemas/QuotaType' }
+        dataQuotaMb: { type: integer, format: int64 }
+        cutoffPolicy: { $ref: '#/components/schemas/CutoffPolicy' }
+        isActive: { type: boolean }
+        appQuotaCount: { type: integer, format: int64 }
+        hasBonus: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    Plan:
+      allOf:
+        - $ref: '#/components/schemas/PlanSummary'
+        - type: object
+          properties:
+            description: { type: string, nullable: true }
+            cycleDays: { type: integer, nullable: true }
+            voiceMinutes: { type: integer }
+            throttleSpeedKbps: { type: integer, nullable: true }
+            bonuses:
+              type: array
+              items: { $ref: '#/components/schemas/Bonus' }
+            appQuotas:
+              type: array
+              items: { $ref: '#/components/schemas/AppQuota' }
+            updatedAt: { type: string, format: date-time }
+    Bonus:
+      type: object
+      properties:
+        bonusType: { type: string, enum: [DATA_MB, VOICE_MIN] }
+        amount: { type: integer, format: int64 }
+    AppQuota:
+      type: object
+      properties:
+        appId: { type: integer, format: int64 }
+        appCode: { type: string }
+        appName: { type: string }
+        quotaType: { $ref: '#/components/schemas/QuotaType' }
+        quotaMb: { type: integer, format: int64 }
+    QuotaType:
+      type: string
+      enum: [DAILY, PER_CYCLE, MONTHLY]
+    CutoffPolicy:
+      type: string
+      enum: [DISCONNECT, THROTTLE]
+    AppCreateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        isActive: { type: boolean, default: true }
+    AppUpdateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        name: { type: string, minLength: 1, maxLength: 100 }
+    StatusRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive: { type: boolean }
+    App:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    DiscountType:
+      type: string
+      enum: [FIXED_AMOUNT, PERCENT]
+    PromoCreateRequest:
+      type: object
+      required: [code, discountType, discountValue, appliesToAllPlans]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        description: { type: string, maxLength: 255, nullable: true }
+        discountType: { $ref: '#/components/schemas/DiscountType' }
+        discountValue: { type: number, minimum: 0, exclusiveMinimum: true, maximum: 9999999999.99, multipleOf: 0.01 }
+        maxDiscountAmount: { type: integer, format: int64, minimum: 1, nullable: true, description: Only valid with PERCENT. }
+        minOrderAmount: { type: integer, format: int64, minimum: 0, default: 0 }
+        validFrom: { type: string, format: date-time, nullable: true }
+        validTo: { type: string, format: date-time, nullable: true }
+        usageLimit: { type: integer, minimum: 1, nullable: true }
+        maxUsesPerMsisdn: { type: integer, minimum: 1, nullable: true }
+        appliesToAllPlans: { type: boolean }
+        planIds:
+          type: array
+          items: { type: integer, format: int64 }
+          description: Required and non-empty when appliesToAllPlans is false.
+    PromoUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/PromoCreateRequest'
+    PromoValidateRequest:
+      type: object
+      required: [code, planId]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 50, pattern: '^[A-Za-z0-9_-]{2,50}$' }
+        planId: { type: integer, format: int64 }
+        msisdn: { type: string, pattern: '^[0-9]{9,15}$', nullable: true }
+    Promo:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        description: { type: string, nullable: true }
+        discountType: { $ref: '#/components/schemas/DiscountType' }
+        discountValue: { type: number }
+        maxDiscountAmount: { type: integer, format: int64, nullable: true }
+        minOrderAmount: { type: integer, format: int64 }
+        validFrom: { type: string, format: date-time, nullable: true }
+        validTo: { type: string, format: date-time, nullable: true }
+        usageLimit: { type: integer, nullable: true }
+        usedCount: { type: integer }
+        maxUsesPerMsisdn: { type: integer, nullable: true }
+        appliesToAllPlans: { type: boolean }
+        isActive: { type: boolean }
+        planIds: { type: array, nullable: true, items: { type: integer, format: int64 } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PromoValidation:
+      type: object
+      properties:
+        valid: { type: boolean }
+        reasonCode:
+          type: string
+          nullable: true
+          enum: [NOT_FOUND, INACTIVE, NOT_STARTED, EXPIRED, EXHAUSTED, USER_LIMIT_REACHED, NOT_APPLICABLE, MIN_ORDER_NOT_MET]
+        discountAmount: { type: integer, format: int64 }
+        finalPrice: { type: integer, format: int64 }

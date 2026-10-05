@@ -1,0 +1,76 @@
+export const vi = {
+  // Common
+  common: {
+    create: 'Tạo mới',
+    edit: 'Sửa',
+    delete: 'Xóa',
+    save: 'Lưu',
+    cancel: 'Hủy',
+    back: 'Quay lại',
+    search: 'Tìm kiếm...',
+    retry: 'Thử lại',
+    confirm: 'Xác nhận',
+    all: 'Tất cả',
+    active: 'Đang bật',
+    inactive: 'Đã tắt',
+    loading: 'Đang tải...',
+    noData: 'Không có dữ liệu',
+  },
+
+  // Plans
+  plans: {
+    title: 'Gói cước',
+    createTitle: 'Tạo gói cước',
+    editTitle: 'Sửa gói cước',
+    code: 'Mã gói',
+    name: 'Tên gói',
+    price: 'Giá',
+    duration: 'Thời hạn',
+    dataQuota: 'Dung lượng',
+    quotaType: 'Loại quota',
+    cutoffPolicy: 'Khi hết data',
+    status: 'Trạng thái',
+    createdAt: 'Ngày tạo',
+    actions: 'Thao tác',
+    description: 'Mô tả',
+    cycleDays: 'Số ngày chu kỳ',
+    voiceMinutes: 'Phút gọi',
+    throttleSpeed: 'Tốc độ sau giảm (Kbps)',
+    isActive: 'Kích hoạt',
+    bonuses: 'Ưu đãi bonus',
+    appQuotas: 'Quota theo app',
+    disconnect: 'Ngắt kết nối',
+    throttle: 'Giảm tốc',
+    daily: 'Theo ngày',
+    monthly: 'Theo tháng',
+    perCycle: 'Theo chu kỳ',
+    deleteConfirm: 'Bạn có chắc muốn xóa gói cước này?',
+    deleteSuccess: 'Đã xóa gói cước',
+    createSuccess: 'Đã tạo gói cước',
+    updateSuccess: 'Đã cập nhật gói cước',
+    toggleSuccess: (name: string, active: boolean) =>
+      `Đã ${active ? 'bật' : 'tắt'} gói ${name}`,
+    notFound: 'Gói cước không tồn tại',
+    codeExists: 'Mã gói đã tồn tại',
+    inUse: 'Gói đang được sử dụng nên không thể xóa. Bạn có muốn tắt gói thay thế?',
+    deactivate: 'Tắt gói',
+    noPlans: 'Chưa có gói cước',
+    noResults: 'Không có kết quả',
+    clearFilters: 'Xóa bộ lọc',
+    unsavedChanges: 'Bạn có thay đổi chưa lưu. Bạn có chắc muốn rời trang?',
+  },
+
+  // Duration options
+  duration: {
+    1: '1 tháng',
+    6: '6 tháng',
+    12: '12 tháng',
+  },
+
+  // Errors
+  errors: {
+    network: 'Không kết nối được máy chủ',
+    unexpected: 'Có lỗi không mong muốn',
+    loadFailed: 'Không thể tải dữ liệu. Vui lòng thử lại.',
+  },
+} as const;
