@@ -20,6 +20,10 @@ export const router = createBrowserRouter([
         lazy: () => import('./features/plans/PlanFormPage'),
       },
       {
+        path: 'plans/:id',
+        lazy: () => import('./features/plans/PlanDetailPage'),
+      },
+      {
         path: 'plans/:planId/edit',
         lazy: () => import('./features/plans/PlanFormPage'),
       },
