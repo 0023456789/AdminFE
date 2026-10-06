@@ -67,10 +67,72 @@ export const vi = {
     12: '12 tháng',
   },
 
+  // Apps
+  apps: {
+    title: 'Ứng dụng',
+    createTitle: 'Tạo ứng dụng',
+    editTitle: 'Sửa ứng dụng',
+    code: 'Mã ứng dụng',
+    name: 'Tên ứng dụng',
+    status: 'Trạng thái',
+    createdAt: 'Ngày tạo',
+    actions: 'Thao tác',
+    isActive: 'Kích hoạt',
+    deleteConfirm: 'Bạn có chắc muốn xóa ứng dụng này?',
+    deleteSuccess: 'Đã xóa ứng dụng',
+    createSuccess: 'Đã tạo ứng dụng',
+    updateSuccess: 'Đã cập nhật ứng dụng',
+    toggleSuccess: (name: string, active: boolean) =>
+      `Đã ${active ? 'bật' : 'tắt'} ứng dụng ${name}`,
+    inUse: 'Ứng dụng đang được sử dụng trong quota của gói cước nên không thể xóa. Bạn có muốn tắt ứng dụng thay thế?',
+    deactivate: 'Tắt ứng dụng',
+    noApps: 'Chưa có ứng dụng',
+    noResults: 'Không có kết quả',
+    codeExists: 'Mã ứng dụng đã tồn tại',
+    clearFilters: 'Xóa bộ lọc',
+  },
+
+
   // Errors
   errors: {
     network: 'Không kết nối được máy chủ',
     unexpected: 'Có lỗi không mong muốn',
     loadFailed: 'Không thể tải dữ liệu. Vui lòng thử lại.',
+  },
+
+  // Promos
+  promos: {
+    title: 'Mã khuyến mãi',
+    createTitle: 'Tạo mã khuyến mãi',
+    editTitle: 'Sửa mã khuyến mãi',
+    code: 'Mã khuyến mãi',
+    description: 'Mô tả',
+    discountType: 'Loại giảm giá',
+    discountValue: 'Giá trị',
+    maxDiscountAmount: 'Giảm tối đa',
+    minOrderAmount: 'Đơn hàng tối thiểu',
+    validFrom: 'Từ ngày',
+    validTo: 'Đến ngày',
+    usageLimit: 'Giới hạn sử dụng',
+    usedCount: 'Đã dùng',
+    maxUsesPerMsisdn: 'Số lần dùng/thuê bao',
+    appliesToAllPlans: 'Áp dụng mọi gói cước',
+    isActive: 'Trạng thái',
+    createdAt: 'Ngày tạo',
+    actions: 'Thao tác',
+    deleteConfirm: 'Bạn có chắc muốn xóa mã khuyến mãi này?',
+    deleteSuccess: 'Đã xóa mã khuyến mãi',
+    createSuccess: 'Đã tạo mã khuyến mãi',
+    updateSuccess: 'Đã cập nhật mã khuyến mãi',
+    toggleSuccess: (code: string, active: boolean) =>
+      `Đã ${active ? 'bật' : 'tắt'} mã ${code}`,
+    noPromos: 'Chưa có mã khuyến mãi',
+    noResults: 'Không có kết quả',
+    fixedAmount: 'Giảm tiền (VNĐ)',
+    percent: 'Giảm phần trăm (%)',
+    validateTitle: 'Kiểm tra mã',
+    planIds: 'Gói cước áp dụng',
+    unlimited: 'Không giới hạn',
+    unsavedChanges: 'Bạn có thay đổi chưa lưu. Bạn có chắc muốn rời trang?',
   },
 } as const;

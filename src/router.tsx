@@ -28,6 +28,26 @@ export const router = createBrowserRouter([
         lazy: () => import('./features/plans/PlanFormPage'),
       },
       {
+        path: 'apps',
+        lazy: () => import('./features/apps/AppListPage'),
+      },
+      {
+        path: 'promos',
+        lazy: () => import('./features/promos/PromoListPage'),
+      },
+      {
+        path: 'promos/new',
+        lazy: () => import('./features/promos/PromoFormPage'),
+      },
+      {
+        path: 'promos/:id',
+        lazy: () => import('./features/promos/PromoDetailPage'),
+      },
+      {
+        path: 'promos/:id/edit',
+        lazy: () => import('./features/promos/PromoFormPage'),
+      },
+      {
         path: '*',
         element: <NotFoundPage />,
       },

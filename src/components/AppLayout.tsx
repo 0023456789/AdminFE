@@ -41,14 +41,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       key: '/apps',
       icon: <TagsOutlined />,
       label: 'Ứng dụng',
-      disabled: true,
       onClick: () => navigate('/apps'),
     },
     {
       key: '/promos',
       icon: <GiftOutlined />,
       label: 'Mã giảm giá',
-      disabled: true,
       onClick: () => navigate('/promos'),
     },
   ];
