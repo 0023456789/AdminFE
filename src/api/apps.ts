@@ -2,6 +2,7 @@ import client from './client';
 import type { App, AppCreateRequest, AppUpdateRequest, Page } from './types';
 
 export interface ListAppsParams {
+  keyword?: string;
   isActive?: boolean;
   page?: number;
   size?: number;
