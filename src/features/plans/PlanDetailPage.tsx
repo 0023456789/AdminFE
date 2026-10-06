@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Button, Tag, Space, Popconfirm, Spin } from 'antd';
+import { Card, Descriptions, Button, Tag, Space, Popconfirm, Spin, message } from 'antd';
 import { EditOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -28,8 +28,12 @@ export const PlanDetailPage: React.FC = () => {
     try {
       await deleteMutation.mutateAsync({ id: plan.id!, name: plan.name });
       navigate('/plans');
-    } catch (err) {
-      // Error handled by mutation (e.g. 409)
+    } catch (err: any) {
+      if (err?.code === 1111 || err?.httpStatus === 409) {
+        message.error('Không thể xóa gói cước vì đang được sử dụng (có thuê bao đang đăng ký).');
+      } else {
+        message.error(err?.message || 'Có lỗi xảy ra khi xóa gói cước');
+      }
     } finally {
       setIsDeleting(false);
     }
