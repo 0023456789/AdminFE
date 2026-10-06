@@ -195,6 +195,10 @@ export function useToggleAppStatus() {
       message.error(getErrorMessage(err));
     },
     onSuccess: (data, variables) => {
+      if (data.warnings?.includes('APP_STILL_ASSIGNED_TO_PLANS')) {
+        message.warning('Ứng dụng đã tắt nhưng vẫn còn nằm trong cấu hình ưu đãi của các gói cước.');
+        return;
+      }
       message.success(vi.apps.toggleSuccess(variables.name ?? data.name ?? '', variables.isActive));
     },
     onSettled: () => {

@@ -17,7 +17,10 @@ export type AppQuota = components['schemas']['AppQuota'];
 export type StatusRequest = components['schemas']['StatusRequest'];
 
 // === App ===
-export type App = components['schemas']['App'];
+export type App = components['schemas']['App'] & {
+  planCodes?: string[];
+  warnings?: string[];
+};
 export type AppCreateRequest = components['schemas']['AppCreateRequest'];
 export type AppUpdateRequest = components['schemas']['AppUpdateRequest'];
 
@@ -26,7 +29,7 @@ export type Promo = components['schemas']['Promo'];
 export type PromoCreateRequest = components['schemas']['PromoCreateRequest'];
 export type PromoUpdateRequest = components['schemas']['PromoUpdateRequest'];
 export type PromoValidateRequest = components['schemas']['PromoValidateRequest'];
-export type PromoValidation = components['schemas']['PromoValidation'];
+export type PromoValidation = components['schemas']['PromoValidation'] & { warnings?: string[] };
 
 // === Pagination ===
 export interface Page<T> {

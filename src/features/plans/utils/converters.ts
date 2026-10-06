@@ -59,9 +59,9 @@ export const toPayload = (
   isEdit: boolean
 ): PlanCreateRequest | PlanUpdateRequest => {
   const base = {
-    code: values.code,
-    name: values.name,
-    description: values.description || null,
+    code: values.code.trim(),
+    name: values.name.trim(),
+    description: values.description?.trim() || null,
     price: values.price,
     durationMonths: values.durationMonths,
     quotaType: values.quotaType,

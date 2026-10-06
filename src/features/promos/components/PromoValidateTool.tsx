@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Alert, Space, Typography, Spin } from 'antd';
+import { Card, Form, Input, Button, Alert, Space, Typography, Spin, Select } from 'antd';
 import { useValidatePromo } from '../hooks/usePromos';
 import { formatVND } from '../../../lib/format';
 import type { PromoValidation } from '../../../api/types';
+import { usePlans } from '../../plans/hooks/usePlans';
 
 const { Text, Title } = Typography;
 
@@ -27,13 +28,14 @@ export const PromoValidateTool: React.FC = () => {
   const [form] = Form.useForm<ValidateFormValues>();
   const [result, setResult] = useState<PromoValidation | null>(null);
   const validateMutation = useValidatePromo();
+  const { data: plans, isLoading: isLoadingPlans } = usePlans({ page: 0, size: 100, sort: 'createdAt,desc' });
 
   const handleFinish = async (values: ValidateFormValues) => {
     try {
       const res = await validateMutation.mutateAsync({
-        code: values.code,
+        code: values.code.trim(),
         planId: Number(values.planId),
-        msisdn: values.msisdn,
+        msisdn: values.msisdn?.trim() || undefined,
       });
       setResult(res);
     } catch (error) {
@@ -48,13 +50,25 @@ export const PromoValidateTool: React.FC = () => {
         layout="vertical"
         onFinish={handleFinish}
       >
-        <Form.Item label="Mã khuyến mãi" name="code" rules={[{ required: true, message: 'Nhập mã khuyến mãi' }]}>
+        <Form.Item label="Mã khuyến mãi" name="code" rules={[
+          { required: true, whitespace: true, message: 'Nhập mã khuyến mãi' },
+          { transform: (value: string) => value?.trim(), pattern: /^[A-Za-z0-9_-]{2,50}$/, message: 'Mã gồm 2-50 ký tự chữ, số, gạch ngang hoặc gạch dưới' },
+        ]}>
           <Input placeholder="Nhập mã..." />
         </Form.Item>
-        <Form.Item label="Plan ID" name="planId" rules={[{ required: true, message: 'Nhập Plan ID' }]}>
-          <Input placeholder="Ví dụ: 1, 2" />
+        <Form.Item label="Gói cước" name="planId" rules={[{ required: true, message: 'Chọn gói cước' }]}>
+          <Select
+            placeholder="Chọn gói cước"
+            loading={isLoadingPlans}
+            options={plans?.content?.map((plan) => ({
+              label: `${plan.name} (${plan.code})${plan.isActive ? '' : ' — Đã tắt'}`,
+              value: plan.id,
+            })) ?? []}
+          />
         </Form.Item>
-        <Form.Item label="Số điện thoại (Tuỳ chọn)" name="msisdn">
+        <Form.Item label="Số điện thoại (Tuỳ chọn)" name="msisdn" rules={[
+          { pattern: /^\d{9,15}$/, message: 'Số điện thoại phải gồm 9-15 chữ số' },
+        ]}>
           <Input placeholder="Ví dụ: 09..." />
         </Form.Item>
         <Form.Item>
@@ -73,23 +87,33 @@ export const PromoValidateTool: React.FC = () => {
       {result && (
         <div style={{ marginTop: 16 }}>
           {result.valid ? (
-            <Alert
-              type="success"
-              message="Mã hợp lệ"
-              description={
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <Text>Số tiền giảm:</Text>
-                    <Text strong>{formatVND(result.discountAmount ?? 0)}</Text>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <Text>Giá cuối cùng:</Text>
-                    <Text strong type="success">{formatVND(result.finalPrice ?? 0)}</Text>
-                  </div>
-                </Space>
-              }
-              showIcon
-            />
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {result.warnings?.includes('PLAN_INACTIVE') && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="Gói cước đang tắt"
+                  description="Mã khuyến mãi hợp lệ, nhưng cần chọn gói cước đang bật để đăng ký thuê bao."
+                />
+              )}
+              <Alert
+                type="success"
+                message="Mã hợp lệ"
+                description={
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      <Text>Số tiền giảm:</Text>
+                      <Text strong>{formatVND(result.discountAmount ?? 0)}</Text>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      <Text>Giá cuối cùng:</Text>
+                      <Text strong type="success">{formatVND(result.finalPrice ?? 0)}</Text>
+                    </div>
+                  </Space>
+                }
+                showIcon
+              />
+            </Space>
           ) : (
             <Alert
               type="error"

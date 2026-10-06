@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { message as antdMessage } from 'antd';
 import { ApiError } from './ApiError';
 
 const client = axios.create({
@@ -14,6 +15,18 @@ client.interceptors.response.use(
     const data = response.data;
     // Successful envelope: { code: 1000, result: ... }
     if (data && data.code === 1000) {
+      const warnings = data.warnings || data.result?.warnings;
+      if (Array.isArray(warnings) && warnings.length > 0) {
+        warnings.forEach((warn: string) => {
+          if (warn === 'APP_STILL_ASSIGNED_TO_PLANS') {
+            // The app status mutation displays this warning after receiving the response.
+          } else if (warn === 'PLAN_INACTIVE') {
+            antdMessage.warning('Mã giảm giá hợp lệ nhưng Gói cước đang bị tắt (Đăng ký thực tế sẽ bị từ chối).');
+          } else {
+            antdMessage.warning(warn);
+          }
+        });
+      }
       return data.result;
     }
     // If code !== 1000 but HTTP was 2xx, treat as business error

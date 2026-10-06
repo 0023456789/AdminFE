@@ -27,6 +27,7 @@ import { toFormValues, toPayload, type PlanFormValues } from './utils/converters
 import { planRules } from './utils/rules';
 import { BonusListField } from './components/BonusListField';
 import { AppQuotaListField } from './components/AppQuotaListField';
+import { parseFieldPath } from '../../lib/errors';
 
 export function Component() {
   const { planId } = useParams();
@@ -61,6 +62,7 @@ export function Component() {
   
   const quotaType = Form.useWatch('quotaType', form);
   const cutoffPolicy = Form.useWatch('cutoffPolicy', form);
+  const durationMonths = Form.useWatch('durationMonths', form);
 
   const { data: plan, isLoading, isError } = usePlanDetail(numericPlanId);
 
@@ -98,10 +100,11 @@ export function Component() {
     } catch (error: any) {
       if (error?.isValidationError) {
         const formErrors = error.fieldErrors.map((e: any) => ({
-          name: e.field,
+          name: parseFieldPath(e.field || ''),
           errors: [e.message]
         }));
         form.setFields(formErrors);
+        message.error(error.fieldErrors[0]?.message || error.message);
       } else {
         message.error(error?.message || 'Có lỗi xảy ra khi lưu gói cước');
       }
@@ -237,14 +240,14 @@ export function Component() {
               <Form.Item
                 label="Số ngày chu kỳ"
                 name="cycleDays"
-                rules={planRules.cycleDays(quotaType)}
-                dependencies={['quotaType']}
+                rules={planRules.cycleDays(quotaType, durationMonths)}
+                dependencies={['quotaType', 'durationMonths']}
               >
                 <InputNumber style={{ width: '100%' }} min={1} disabled={quotaType !== 'PER_CYCLE'} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Phút gọi (tuỳ chọn)" name="voiceMinutes">
+              <Form.Item label="Phút gọi (tuỳ chọn)" name="voiceMinutes" rules={planRules.voiceMinutes}>
                 <InputNumber style={{ width: '100%' }} min={0} />
               </Form.Item>
             </Col>
@@ -271,7 +274,7 @@ export function Component() {
             </Col>
 
             <Col span={24}>
-              <Form.Item label="Mô tả" name="description">
+              <Form.Item label="Mô tả" name="description" rules={planRules.description}>
                 <Input.TextArea rows={4} placeholder="Mô tả chi tiết gói cước" />
               </Form.Item>
             </Col>

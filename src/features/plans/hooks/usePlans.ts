@@ -3,11 +3,12 @@ import { listPlans, getPlan, type ListPlansParams } from '../../../api/plans';
 import { planKeys } from '../../../api/queryKeys';
 import type { Page, PlanSummary, Plan } from '../../../api/types';
 
-export function usePlans(params: ListPlansParams = {}) {
+export function usePlans(params: ListPlansParams = {}, enabled = true) {
   return useQuery<Page<PlanSummary>>({
     queryKey: planKeys.list(params),
     queryFn: () => listPlans(params),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

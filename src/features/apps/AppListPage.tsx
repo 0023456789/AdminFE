@@ -41,9 +41,24 @@ const { Text } = Typography;
 const { Option } = Select;
 
 // Extract Status Switch pattern for App
-const AppStatusSwitch: React.FC<{ id: number; name: string; isActive: boolean; disabled?: boolean }> = ({ id, name, isActive, disabled }) => {
+const AppStatusSwitch: React.FC<{ id: number; name: string; isActive: boolean; disabled?: boolean; planCodes?: string[] }> = ({ id, name, isActive, disabled, planCodes }) => {
   const { mutate, isPending, variables } = useToggleAppStatus();
   const isCurrentMutating = isPending && variables?.id === id;
+
+  const handleChange = (checked: boolean) => {
+    if (!checked && planCodes && planCodes.length > 0) {
+      Modal.confirm({
+        title: 'Xác nhận tắt ứng dụng',
+        content: `Ứng dụng này đang được gán cho ${planCodes.length} gói cước (${planCodes.join(', ')}). Tắt ứng dụng sẽ không xóa cấu hình ưu đãi khỏi các gói. Bạn có chắc chắn muốn tiếp tục không?`,
+        okText: 'Tắt ứng dụng',
+        cancelText: vi.common.cancel,
+        okButtonProps: { danger: true },
+        onOk: () => mutate({ id, name, isActive: checked })
+      });
+    } else {
+      mutate({ id, name, isActive: checked });
+    }
+  };
 
   return (
     <Tooltip title={isActive ? 'Bấm để tắt' : 'Bấm để bật'}>
@@ -51,7 +66,7 @@ const AppStatusSwitch: React.FC<{ id: number; name: string; isActive: boolean; d
         checked={isActive}
         loading={isCurrentMutating}
         disabled={disabled || isCurrentMutating}
-        onChange={(checked) => mutate({ id, name, isActive: checked })}
+        onChange={handleChange}
         checkedChildren="Bật"
         unCheckedChildren="Tắt"
         aria-label={`Kích hoạt ứng dụng ${name}`}
@@ -152,16 +167,26 @@ export const AppListPage: React.FC = () => {
           id={record.id!}
           name={record.name ?? ''}
           isActive={Boolean(record.isActive)}
+          planCodes={record.planCodes}
         />
       ),
     },
     {
-      title: vi.apps.createdAt,
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      sorter: true,
-      sortOrder: getSortOrder('createdAt'),
-      render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm'),
+      title: 'Các gói hỗ trợ',
+      dataIndex: 'planCodes',
+      key: 'planCodes',
+      render: (planCodes?: string[]) => {
+        if (!planCodes || planCodes.length === 0) return <Text type="secondary">Chưa gán</Text>;
+        return (
+          <Space size={[0, 4]} wrap>
+            {planCodes.map((code) => (
+              <Typography.Text code key={code}>
+                {code}
+              </Typography.Text>
+            ))}
+          </Space>
+        );
+      },
     },
     {
       title: vi.apps.actions,

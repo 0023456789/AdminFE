@@ -40,15 +40,16 @@ export function AppFormModal({ open, app, onClose }: AppFormModalProps) {
   }, [open, app, form]);
 
   const handleSubmit = async (values: AppCreateRequest) => {
+    const normalizedValues = { ...values, code: values.code.trim(), name: values.name.trim() };
     try {
       if (isEdit && app?.id) {
         // AppUpdateRequest only needs code and name
         await updateMutation.mutateAsync({
           id: app.id,
-          data: { code: values.code, name: values.name },
+          data: { code: normalizedValues.code, name: normalizedValues.name },
         });
       } else {
-        await createMutation.mutateAsync(values);
+        await createMutation.mutateAsync(normalizedValues);
       }
       onClose();
     } catch (err) {
@@ -86,8 +87,8 @@ export function AppFormModal({ open, app, onClose }: AppFormModalProps) {
           name="code"
           label={vi.apps.code}
           rules={[
-            { required: true, message: 'Vui lòng nhập mã ứng dụng' },
-            { pattern: /^[A-Za-z0-9_]{2,50}$/, message: 'Mã không hợp lệ (2-50 ký tự, không dấu, không khoảng trắng)' }
+            { required: true, whitespace: true, message: 'Vui lòng nhập mã ứng dụng' },
+            { transform: (value: string) => value?.trim(), pattern: /^[A-Za-z0-9_-]{2,50}$/, message: 'Mã gồm 2-50 ký tự chữ, số, gạch ngang hoặc gạch dưới' }
           ]}
         >
           <Input placeholder="VD: FB, YOUTUBE..." />
@@ -96,7 +97,7 @@ export function AppFormModal({ open, app, onClose }: AppFormModalProps) {
           name="name"
           label={vi.apps.name}
           rules={[
-            { required: true, message: 'Vui lòng nhập tên ứng dụng' },
+            { required: true, whitespace: true, message: 'Vui lòng nhập tên ứng dụng' },
             { max: 100, message: 'Tên quá dài (tối đa 100 ký tự)' }
           ]}
         >

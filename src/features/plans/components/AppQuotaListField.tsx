@@ -14,7 +14,9 @@ export const AppQuotaListField: React.FC = () => {
         rules={[
           {
             validator: async (_, quotas) => {
-              if (!quotas || quotas.length < 2) return;
+              if (!quotas) return;
+              if (quotas.length > 50) throw new Error('Mỗi gói tối đa 50 ưu đãi ứng dụng');
+              if (quotas.length < 2) return;
               const apps = quotas.map((q: any) => q?.appId).filter(Boolean);
               if (new Set(apps).size !== apps.length) {
                 return Promise.reject(new Error('Các ứng dụng không được trùng nhau'));
@@ -68,6 +70,7 @@ export const AppQuotaListField: React.FC = () => {
                     rules={[
                       { required: true, message: 'Nhập dung lượng' },
                       { type: 'number', min: 1, message: 'Phải > 0' },
+                      { type: 'integer', message: 'Dung lượng phải là số nguyên MB' },
                     ]}
                   >
                     <InputNumber placeholder="Dung lượng (MB)" style={{ width: 150 }} min={1} />

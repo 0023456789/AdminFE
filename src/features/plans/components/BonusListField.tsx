@@ -10,7 +10,9 @@ export const BonusListField: React.FC = () => {
         rules={[
           {
             validator: async (_, bonuses) => {
-              if (!bonuses || bonuses.length < 2) return;
+              if (!bonuses) return;
+              if (bonuses.length > 2) throw new Error('Mỗi gói tối đa 2 ưu đãi chu kỳ đầu');
+              if (bonuses.length < 2) return;
               const types = bonuses.map((b: any) => b?.bonusType).filter(Boolean);
               if (new Set(types).size !== types.length) {
                 return Promise.reject(new Error('Các loại ưu đãi không được trùng nhau'));

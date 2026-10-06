@@ -8,6 +8,7 @@ import {
   Typography,
   Modal,
   Card,
+  Tooltip,
 } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { SorterResult } from 'antd/es/table/interface';
@@ -16,11 +17,16 @@ import {
   EditOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
+import { useQueries } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 
 
 import type { PlanSummary } from '../../api/types';
+import { getPlan } from '../../api/plans';
+import { planKeys } from '../../api/queryKeys';
+import { useApps } from '../apps/hooks/useApps';
 import { usePlans } from './hooks/usePlans';
 import { usePlanUrlState } from '../../lib/urlState';
 import { useDeletePlan, useTogglePlanStatus } from './hooks/usePlanMutations';
@@ -51,6 +57,19 @@ export const PlanListPage: React.FC = () => {
   } = usePlanUrlState();
 
   const { data, isLoading, isError, error, refetch, isFetching } = usePlans(params);
+  const listedPlans = data?.content ?? [];
+  const planDetails = useQueries({
+    queries: listedPlans.map((plan) => ({
+      queryKey: planKeys.detail(plan.id!),
+      queryFn: () => getPlan(plan.id!),
+      enabled: Boolean(plan.id),
+      staleTime: 60_000,
+    })),
+  });
+  const appsQuery = useApps({ size: 100 });
+  const inactiveAppIds = new Set(
+    (appsQuery.data?.content ?? []).filter((app) => !app.isActive).map((app) => app.id),
+  );
   const deleteMutation = useDeletePlan();
   const toggleMutation = useTogglePlanStatus();
 
@@ -111,13 +130,26 @@ export const PlanListPage: React.FC = () => {
       key: 'code',
       sorter: true,
       sortOrder: getSortOrder('code'),
-      render: (code: string, record: PlanSummary) => (
-        <Link to={`/plans/${record.id}`}>
-          <Text strong style={{ fontFamily: 'monospace', letterSpacing: 0.5, color: '#1677ff' }}>
-            {code}
-          </Text>
-        </Link>
-      ),
+      render: (code: string, record: PlanSummary) => {
+        const detailIndex = listedPlans.findIndex((plan) => plan.id === record.id);
+        const hasInactiveApp = (planDetails[detailIndex]?.data?.appQuotas ?? []).some(
+          (quota) => quota.appId !== undefined && inactiveAppIds.has(quota.appId),
+        );
+        return (
+          <Space size={6}>
+            <Link to={`/plans/${record.id}`}>
+              <Text strong style={{ fontFamily: 'monospace', letterSpacing: 0.5, color: '#1677ff' }}>
+                {code}
+              </Text>
+            </Link>
+            {hasInactiveApp && (
+              <Tooltip title="Gói này còn ưu đãi cho ứng dụng đã tắt. Mở chi tiết gói để kiểm tra.">
+                <WarningOutlined aria-label="Có ưu đãi cho ứng dụng đã tắt" style={{ color: '#faad14' }} />
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: vi.plans.name,
