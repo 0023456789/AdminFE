@@ -12,10 +12,12 @@ import { useDeletePlan } from './hooks/usePlanMutations';
 import { formatVND, formatQuotaDisplay, formatDuration } from '../../lib/format';
 import { getErrorMessage } from '../../lib/errors';
 import { vi } from '../../i18n/vi';
+import { useAuth } from '../../auth/AuthContext';
 
 export const PlanDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { canWrite, canDelete } = useAuth();
   const planId = Number(id);
 
   const { data: plan, isLoading, isError, error, refetch } = usePlanDetail(planId);
@@ -70,17 +72,17 @@ export const PlanDetailPage: React.FC = () => {
             <Tag color="blue" style={{ marginLeft: 8 }}>{plan.code}</Tag>
           </Space>
         }
-        extra={
+        extra={canWrite || canDelete ? (
           <Space>
-            <Button
+            {canWrite && <Button
               icon={<EditOutlined />}
               disabled={plan.isActive}
               title={plan.isActive ? 'Chỉ được thao tác khi đã tắt gói' : vi.common.edit}
               onClick={() => navigate(`/plans/${plan.id}/edit`)}
             >
               {vi.common.edit}
-            </Button>
-            <Popconfirm
+            </Button>}
+            {canDelete && <Popconfirm
               title={vi.plans.deleteConfirm}
               okText={vi.common.delete}
               cancelText={vi.common.cancel}
@@ -96,9 +98,9 @@ export const PlanDetailPage: React.FC = () => {
               >
                 {vi.common.delete}
               </Button>
-            </Popconfirm>
+            </Popconfirm>}
           </Space>
-        }
+        ) : null}
       />
 
       <Card style={{ marginBottom: 16 }}>
@@ -106,7 +108,7 @@ export const PlanDetailPage: React.FC = () => {
           <Descriptions.Item label="Mã gói">{plan.code}</Descriptions.Item>
           <Descriptions.Item label="Tên gói">{plan.name}</Descriptions.Item>
           <Descriptions.Item label="Trạng thái">
-            <PlanStatusSwitch id={plan.id!} name={plan.name!} isActive={Boolean(plan.isActive)} />
+            <PlanStatusSwitch id={plan.id!} name={plan.name!} isActive={Boolean(plan.isActive)} disabled={!canWrite} />
           </Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">
             {plan.createdAt ? dayjs(plan.createdAt).format('DD/MM/YYYY HH:mm') : '-'}

@@ -1,12 +1,19 @@
 import axios from 'axios';
 import { message as antdMessage } from 'antd';
 import { ApiError } from './ApiError';
+import { AUTH_EXPIRED_EVENT, clearAccessToken, readAccessToken } from '../auth/session';
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+client.interceptors.request.use((config) => {
+  const token = readAccessToken();
+  if (token) config.headers.set('Authorization', `Bearer ${token}`);
+  return config;
 });
 
 // Response interceptor: unwrap ApiResponse envelope
@@ -44,6 +51,10 @@ client.interceptors.response.use(
   (error) => {
     if (axios.isAxiosError(error)) {
       const resp = error.response;
+      if (resp?.status === 401 && !error.config?.url?.endsWith('/auth/login')) {
+        clearAccessToken();
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+      }
       if (resp?.data && typeof resp.data.code === 'number') {
         // Server returned a structured error
         throw new ApiError({

@@ -12,10 +12,12 @@ import { usePromoDetail, useDeletePromo } from './hooks/usePromos';
 import { formatVND } from '../../lib/format';
 import { getErrorMessage } from '../../lib/errors';
 import { vi } from '../../i18n/vi';
+import { useAuth } from '../../auth/AuthContext';
 
 export const PromoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { canWrite, canDelete } = useAuth();
   const promoId = Number(id);
 
   const { data: promo, isLoading, isError, error, refetch } = usePromoDetail(promoId);
@@ -65,17 +67,17 @@ export const PromoDetailPage: React.FC = () => {
             Mã: {promo.code}
           </Space>
         }
-        extra={
+        extra={canWrite || canDelete ? (
           <Space>
-            <Button
+            {canWrite && <Button
               icon={<EditOutlined />}
               disabled={promo.isActive}
               title={promo.isActive ? 'Chỉ được thao tác khi đã tắt' : vi.common.edit}
               onClick={() => navigate(`/promos/${promo.id}/edit`)}
             >
               {vi.common.edit}
-            </Button>
-            <Popconfirm
+            </Button>}
+            {canDelete && <Popconfirm
               title={vi.promos.deleteConfirm}
               okText={vi.common.delete}
               cancelText={vi.common.cancel}
@@ -91,9 +93,9 @@ export const PromoDetailPage: React.FC = () => {
               >
                 {vi.common.delete}
               </Button>
-            </Popconfirm>
+            </Popconfirm>}
           </Space>
-        }
+        ) : null}
       />
 
       <Row gutter={16}>
@@ -102,7 +104,7 @@ export const PromoDetailPage: React.FC = () => {
             <Descriptions title="Thông tin cơ bản" column={2} bordered>
               <Descriptions.Item label={vi.promos.code}>{promo.code}</Descriptions.Item>
               <Descriptions.Item label={vi.promos.isActive}>
-                <PromoStatusSwitch id={promo.id!} code={promo.code!} isActive={Boolean(promo.isActive)} />
+                <PromoStatusSwitch id={promo.id!} code={promo.code!} isActive={Boolean(promo.isActive)} disabled={!canWrite} />
               </Descriptions.Item>
               
               <Descriptions.Item label={vi.promos.discountType}>

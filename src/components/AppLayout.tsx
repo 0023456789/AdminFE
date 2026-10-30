@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Layout, Menu, theme } from 'antd';
+import { Button, Layout, Menu, Space, Tag, theme } from 'antd';
 import {
   AppstoreOutlined,
   TagsOutlined,
   GiftOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
 const { Header, Content, Sider } = Layout;
 
@@ -17,6 +19,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { roles, logout } = useAuth();
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -97,7 +100,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             borderBottom: '1px solid #f0f0f0',
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Quản lý gói cước MVNO</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Quản lý AdminSky</h2>
+          <Space style={{ marginLeft: 'auto' }}>
+            <Tag>{roles.length ? roles.join(', ') : 'Không có role'}</Tag>
+            <Button icon={<LogoutOutlined />} onClick={() => { logout(); navigate('/login', { replace: true }); }}>
+              Đăng xuất
+            </Button>
+          </Space>
         </Header>
         <Content
           style={{

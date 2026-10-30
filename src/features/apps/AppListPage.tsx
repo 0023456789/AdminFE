@@ -36,6 +36,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { EmptyState } from '../../components/EmptyState';
 import { isApiError, getErrorMessage } from '../../lib/errors';
 import { vi } from '../../i18n/vi';
+import { useAuth } from '../../auth/AuthContext';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -76,6 +77,7 @@ const AppStatusSwitch: React.FC<{ id: number; name: string; isActive: boolean; d
 };
 
 export const AppListPage: React.FC = () => {
+  const { canWrite, canDelete } = useAuth();
   const {
     params,
     raw,
@@ -168,6 +170,7 @@ export const AppListPage: React.FC = () => {
           name={record.name ?? ''}
           isActive={Boolean(record.isActive)}
           planCodes={record.planCodes}
+          disabled={!canWrite}
         />
       ),
     },
@@ -197,7 +200,7 @@ export const AppListPage: React.FC = () => {
         const disableActionMsg = 'Chỉ được thao tác khi đã tắt ứng dụng';
         return (
           <Space size="small">
-            <Button
+            {canWrite && <Button
               type="text"
               icon={<EditOutlined />}
               size="small"
@@ -207,8 +210,8 @@ export const AppListPage: React.FC = () => {
                 setEditingApp(record);
                 setFormModalOpen(true);
               }}
-            />
-            <Popconfirm
+            />}
+            {canDelete && <Popconfirm
               title={vi.apps.deleteConfirm}
               okText={vi.common.delete}
               cancelText={vi.common.cancel}
@@ -224,7 +227,7 @@ export const AppListPage: React.FC = () => {
                 title={record.isActive ? disableActionMsg : vi.common.delete}
                 disabled={record.isActive}
               />
-            </Popconfirm>
+            </Popconfirm>}
           </Space>
         );
       },
@@ -244,7 +247,7 @@ export const AppListPage: React.FC = () => {
             ? `Tổng số ${data.totalElements} ứng dụng`
             : 'Quản lý danh sách ứng dụng'
         }
-        extra={
+        extra={canWrite ? (
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -256,7 +259,7 @@ export const AppListPage: React.FC = () => {
           >
             {vi.apps.createTitle}
           </Button>
-        }
+        ) : null}
       />
 
       <Card bodyStyle={{ padding: '16px 24px', marginBottom: 16 }}>
@@ -314,7 +317,7 @@ export const AppListPage: React.FC = () => {
             ) : (
               <EmptyState
                 description={vi.apps.noApps}
-                showCreate
+                showCreate={canWrite}
                 onCreate={() => {
                   setEditingApp(null);
                   setFormModalOpen(true);
@@ -344,7 +347,7 @@ export const AppListPage: React.FC = () => {
           <Button key="cancel" onClick={() => setConflictApp(null)}>
             {vi.common.cancel}
           </Button>,
-          <Button
+          ...(canWrite ? [<Button
             key="deactivate"
             type="primary"
             danger
@@ -361,7 +364,7 @@ export const AppListPage: React.FC = () => {
             }}
           >
             {vi.apps.deactivate}
-          </Button>,
+          </Button>] : []),
         ]}
       >
         <p>{vi.apps.inUse}</p>

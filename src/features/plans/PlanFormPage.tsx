@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { 
   Form, 
@@ -39,23 +39,35 @@ export function Component() {
   const [form] = Form.useForm<PlanFormValues>();
   const [submitting, setSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const allowNavigationRef = useRef(false);
+  const unsavedConfirmOpenRef = useRef(false);
 
   // Block navigation if form is dirty
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
+      isDirty && !allowNavigationRef.current && currentLocation.pathname !== nextLocation.pathname
   );
 
   useEffect(() => {
     if (blocker.state === 'blocked') {
+      if (unsavedConfirmOpenRef.current) return;
+      unsavedConfirmOpenRef.current = true;
       Modal.confirm({
         title: 'Cảnh báo',
         content: 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
         okText: 'Rời khỏi',
         cancelText: 'Ở lại',
-        onOk: () => blocker.proceed(),
-        onCancel: () => blocker.reset(),
+        onOk: () => {
+          unsavedConfirmOpenRef.current = false;
+          blocker.proceed();
+        },
+        onCancel: () => {
+          unsavedConfirmOpenRef.current = false;
+          blocker.reset();
+        },
       });
+    } else {
+      unsavedConfirmOpenRef.current = false;
     }
   }, [blocker]);
 
@@ -94,6 +106,7 @@ export function Component() {
         message.success('Tạo gói cước thành công');
       }
       
+      allowNavigationRef.current = true;
       setIsDirty(false);
       queryClient.invalidateQueries({ queryKey: planKeys.all });
       navigate('/plans');
@@ -158,19 +171,7 @@ export function Component() {
             <Button
               type="text"
               icon={<ArrowLeftOutlined />}
-              onClick={() => {
-                if (isDirty) {
-                  Modal.confirm({
-                    title: 'Cảnh báo',
-                    content: 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
-                    okText: 'Rời khỏi',
-                    cancelText: 'Ở lại',
-                    onOk: () => navigate('/plans'),
-                  });
-                } else {
-                  navigate('/plans');
-                }
-              }}
+              onClick={() => navigate('/plans')}
             />
             {isEdit ? 'Sửa gói cước' : 'Tạo gói cước mới'}
           </Space>
@@ -296,19 +297,7 @@ export function Component() {
           </Row>
 
           <Space style={{ marginTop: 24, width: '100%', justifyContent: 'flex-end' }}>
-            <Button onClick={() => {
-              if (isDirty) {
-                Modal.confirm({
-                  title: 'Cảnh báo',
-                  content: 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
-                  okText: 'Rời khỏi',
-                  cancelText: 'Ở lại',
-                  onOk: () => navigate('/plans'),
-                });
-              } else {
-                navigate('/plans');
-              }
-            }}>
+            <Button onClick={() => navigate('/plans')}>
               Hủy
             </Button>
             <Button

@@ -7,6 +7,7 @@ import viVN from 'antd/locale/vi_VN';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import { router } from './router';
+import { AuthProvider } from './auth/AuthContext';
 import './index.css';
 
 dayjs.locale('vi');
@@ -25,7 +26,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={viVN}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </ConfigProvider>
     </QueryClientProvider>
   </React.StrictMode>,
