@@ -3,6 +3,7 @@ import { Alert, Button, Card, Form, Input, Typography } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { getErrorMessage } from '../../lib/errors';
+import { CHANGE_PASSWORD_PATH } from '../../components/AuthRoutes';
 
 interface LoginValues {
   username: string;
@@ -20,9 +21,10 @@ export function LoginPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await login(username, password);
+      const { passwordChangeRequired } = await login(username, password);
+      // Tài khoản còn mật khẩu ban đầu phải đổi trước khi vào các trang khác (ADM-07).
       const from = (location.state as { from?: string } | null)?.from ?? '/plans';
-      navigate(from, { replace: true });
+      navigate(passwordChangeRequired ? CHANGE_PASSWORD_PATH : from, { replace: true });
     } catch (loginError) {
       setError(getErrorMessage(loginError));
     } finally {

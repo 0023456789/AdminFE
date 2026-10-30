@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   TagsOutlined,
   GiftOutlined,
+  KeyOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -103,6 +104,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Quản lý AdminSky</h2>
           <Space style={{ marginLeft: 'auto' }}>
             <Tag>{roles.length ? roles.join(', ') : 'Không có role'}</Tag>
+            <Button icon={<KeyOutlined />} onClick={() => navigate('/change-password')}>
+              Đổi mật khẩu
+            </Button>
             <Button icon={<LogoutOutlined />} onClick={() => { logout(); navigate('/login', { replace: true }); }}>
               Đăng xuất
             </Button>
