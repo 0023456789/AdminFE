@@ -323,7 +323,7 @@ export interface components {
       discountValue: number;
       /**
        * Format: int64
-       * @description Only valid with PERCENT.
+       * @description Only valid with PERCENT; required when a PERCENT discountValue is above 30 (ADM-09).
        */
       maxDiscountAmount?: number | null;
       /**
@@ -331,14 +331,27 @@ export interface components {
        * @default 0
        */
       minOrderAmount?: number;
-      /** Format: date-time */
+      /**
+       * Format: date-time
+       * @description Between 2000-01-01 and 2100-01-01 (ADM-11).
+       */
       validFrom?: string | null;
-      /** Format: date-time */
+      /**
+       * Format: date-time
+       * @description Between 2000-01-01 and 2100-01-01 (ADM-11).
+       */
       validTo?: string | null;
+      /** @description Required unless unlimitedUsage is true (ADM-09). */
       usageLimit?: number | null;
+      /** @description Must be true when usageLimit is null, and absent or false otherwise (ADM-09). */
+      unlimitedUsage?: boolean | null;
+      /**
+       * @description Defaults to 1 when omitted (ADM-09).
+       * @default 1
+       */
       maxUsesPerMsisdn?: number | null;
       appliesToAllPlans: boolean;
-      /** @description Required and non-empty when appliesToAllPlans is false. */
+      /** @description Required and non-empty when appliesToAllPlans is false; at most 100 ids (ADM-11). */
       planIds?: number[];
     };
     PromoUpdateRequest: components["schemas"]["PromoCreateRequest"];

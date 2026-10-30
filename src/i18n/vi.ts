@@ -114,6 +114,7 @@ export const vi = {
     validFrom: 'Từ ngày',
     validTo: 'Đến ngày',
     usageLimit: 'Giới hạn sử dụng',
+    unlimitedUsage: 'Không giới hạn tổng lượt dùng',
     usedCount: 'Đã dùng',
     maxUsesPerMsisdn: 'Số lần dùng/thuê bao',
     appliesToAllPlans: 'Áp dụng mọi gói cước',

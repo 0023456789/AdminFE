@@ -689,17 +689,19 @@ components:
         description: { type: string, maxLength: 255, nullable: true }
         discountType: { $ref: '#/components/schemas/DiscountType' }
         discountValue: { type: number, minimum: 0, exclusiveMinimum: true, maximum: 9999999999.99, multipleOf: 0.01 }
-        maxDiscountAmount: { type: integer, format: int64, minimum: 1, nullable: true, description: Only valid with PERCENT. }
+        maxDiscountAmount: { type: integer, format: int64, minimum: 1, nullable: true, description: 'Only valid with PERCENT; required when a PERCENT discountValue is above 30 (ADM-09).' }
         minOrderAmount: { type: integer, format: int64, minimum: 0, default: 0 }
-        validFrom: { type: string, format: date-time, nullable: true }
-        validTo: { type: string, format: date-time, nullable: true }
-        usageLimit: { type: integer, minimum: 1, nullable: true }
-        maxUsesPerMsisdn: { type: integer, minimum: 1, nullable: true }
+        validFrom: { type: string, format: date-time, nullable: true, description: 'Between 2000-01-01 and 2100-01-01 (ADM-11).' }
+        validTo: { type: string, format: date-time, nullable: true, description: 'Between 2000-01-01 and 2100-01-01 (ADM-11).' }
+        usageLimit: { type: integer, minimum: 1, nullable: true, description: 'Required unless unlimitedUsage is true (ADM-09).' }
+        unlimitedUsage: { type: boolean, nullable: true, description: 'Must be true when usageLimit is null, and absent or false otherwise (ADM-09).' }
+        maxUsesPerMsisdn: { type: integer, minimum: 1, nullable: true, default: 1, description: 'Defaults to 1 when omitted (ADM-09).' }
         appliesToAllPlans: { type: boolean }
         planIds:
           type: array
-          items: { type: integer, format: int64 }
-          description: Required and non-empty when appliesToAllPlans is false.
+          maxItems: 100
+          items: { type: integer, format: int64, minimum: 1 }
+          description: Required and non-empty when appliesToAllPlans is false; at most 100 ids (ADM-11).
     PromoUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/PromoCreateRequest'

@@ -14,6 +14,18 @@ import { parseFieldPath } from '../../lib/errors';
 
 const MAX_VND = 999_999_999_999;
 const PROMO_CODE_PATTERN = /^[A-Za-z0-9_-]{2,50}$/;
+/** Giảm theo % trên mức này phải có "Giảm tối đa" (ADM-09). */
+const UNCAPPED_PERCENT_LIMIT = 30;
+/** Backend giới hạn số gói áp dụng (ADM-11). */
+const MAX_PLAN_IDS = 100;
+/** Backend chỉ nhận ngày trong khoảng này (ADM-11). */
+const EARLIEST_DATE = dayjs('2000-01-01T00:00:00Z');
+const LATEST_DATE = dayjs('2100-01-01T00:00:00Z');
+const outOfRange = (date: dayjs.Dayjs) => date.isBefore(EARLIEST_DATE) || !date.isBefore(LATEST_DATE);
+const dateInRangeRule = {
+  validator: (_: unknown, value?: dayjs.Dayjs) => !value || !outOfRange(value)
+    ? Promise.resolve() : Promise.reject(new Error('Ngày phải trong khoảng 2000–2099')),
+};
 
 export function Component() {
   const { id } = useParams();
@@ -43,6 +55,7 @@ export function Component() {
 
   const discountType = Form.useWatch('discountType', form);
   const appliesToAllPlans = Form.useWatch('appliesToAllPlans', form);
+  const unlimitedUsage = Form.useWatch('unlimitedUsage', form);
   const { data: promo, isLoading: isLoadingPromo, isError: isErrorPromo } = usePromoDetail(numericId);
   const {
     data: plansData,
@@ -59,12 +72,16 @@ export function Component() {
         ...promo,
         validFrom: promo.validFrom ? dayjs(promo.validFrom) : undefined,
         validTo: promo.validTo ? dayjs(promo.validTo) : undefined,
+        unlimitedUsage: promo.usageLimit == null,
       });
     } else if (!isEdit) {
+      // Mặc định "đóng": phải nhập tổng lượt dùng, 1 lượt mỗi thuê bao (ADM-09).
       form.setFieldsValue({
         discountType: 'FIXED_AMOUNT',
         appliesToAllPlans: true,
         isActive: true,
+        unlimitedUsage: false,
+        maxUsesPerMsisdn: 1,
       });
     }
   }, [isEdit, promo, form]);
@@ -79,6 +96,9 @@ export function Component() {
       maxDiscountAmount: values.discountType === 'PERCENT' ? values.maxDiscountAmount ?? null : null,
       minOrderAmount: values.minOrderAmount ?? 0,
       planIds: values.appliesToAllPlans ? [] : values.planIds,
+      // Backend yêu cầu đúng một trong hai: usageLimit, hoặc unlimitedUsage = true (ADM-09).
+      usageLimit: values.unlimitedUsage ? null : values.usageLimit,
+      unlimitedUsage: values.unlimitedUsage === true,
     };
 
     try {
@@ -193,9 +213,14 @@ export function Component() {
             </Col>
             <Col span={12}>
               {discountType === 'PERCENT' && (
-                <Form.Item label={vi.promos.maxDiscountAmount} name="maxDiscountAmount" rules={[
+                <Form.Item label={vi.promos.maxDiscountAmount} name="maxDiscountAmount" dependencies={['discountValue']} rules={[
                   { type: 'number', min: 0.01, max: MAX_VND, message: 'Giảm tối đa phải từ 1 đến 999.999.999.999 VNĐ' },
                   { type: 'integer', message: 'Giảm tối đa phải là số nguyên VNĐ' },
+                  ({ getFieldValue }) => ({
+                    validator: (_, value) => value != null || !(getFieldValue('discountValue') > UNCAPPED_PERCENT_LIMIT)
+                      ? Promise.resolve()
+                      : Promise.reject(new Error(`Giảm trên ${UNCAPPED_PERCENT_LIMIT}% phải nhập mức giảm tối đa`)),
+                  }),
                 ]}>
                   <InputNumber
                     style={{ width: '100%' }}
@@ -204,7 +229,7 @@ export function Component() {
                     min={0.01}
                     max={MAX_VND}
                     precision={0}
-                    placeholder="Không giới hạn nếu để trống"
+                    placeholder={`Bắt buộc khi giảm trên ${UNCAPPED_PERCENT_LIMIT}%`}
                   />
                 </Form.Item>
               )}
@@ -230,12 +255,13 @@ export function Component() {
             <Col span={12}>
               <Row gutter={8}>
                 <Col span={12}>
-                  <Form.Item label={vi.promos.validFrom} name="validFrom">
-                    <DatePicker style={{ width: '100%' }} showTime format="DD/MM/YYYY HH:mm" />
+                  <Form.Item label={vi.promos.validFrom} name="validFrom" rules={[dateInRangeRule]}>
+                    <DatePicker style={{ width: '100%' }} showTime format="DD/MM/YYYY HH:mm" disabledDate={outOfRange} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item label={vi.promos.validTo} name="validTo" dependencies={['validFrom']} rules={[
+                    dateInRangeRule,
                     ({ getFieldValue }) => ({
                       validator(_, value) {
                         const validFrom = getFieldValue('validFrom');
@@ -245,20 +271,24 @@ export function Component() {
                       },
                     }),
                   ]}>
-                    <DatePicker style={{ width: '100%' }} showTime format="DD/MM/YYYY HH:mm" />
+                    <DatePicker style={{ width: '100%' }} showTime format="DD/MM/YYYY HH:mm" disabledDate={outOfRange} />
                   </Form.Item>
                 </Col>
               </Row>
             </Col>
 
             <Col span={12}>
-              <Form.Item label={vi.promos.usageLimit} name="usageLimit" rules={[
+              <Form.Item label={vi.promos.unlimitedUsage} name="unlimitedUsage" valuePropName="checked">
+                <Switch checkedChildren="Có" unCheckedChildren="Không" />
+              </Form.Item>
+              <Form.Item label={vi.promos.usageLimit} name="usageLimit" hidden={unlimitedUsage === true} rules={[
+                { required: unlimitedUsage !== true, message: 'Nhập tổng lượt dùng, hoặc bật "Không giới hạn"' },
                 { type: 'number', min: 1, message: 'Giới hạn lượt dùng phải là số nguyên dương' },
                 { type: 'integer', message: 'Giới hạn lượt dùng phải là số nguyên' },
                 { validator: (_, value) => value == null || value >= (promo?.usedCount ?? 0)
                   ? Promise.resolve() : Promise.reject(new Error(`Không được thấp hơn số lượt đã dùng (${promo?.usedCount})`)) },
               ]}>
-                <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="Không giới hạn nếu để trống" />
+                <InputNumber style={{ width: '100%' }} min={1} precision={0} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -266,7 +296,7 @@ export function Component() {
                 { type: 'number', min: 1, message: 'Giới hạn theo thuê bao phải là số nguyên dương' },
                 { type: 'integer', message: 'Giới hạn theo thuê bao phải là số nguyên' },
               ]}>
-                <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="Không giới hạn nếu để trống" />
+                <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="Mặc định 1 lượt nếu để trống" />
               </Form.Item>
             </Col>
 
@@ -279,8 +309,11 @@ export function Component() {
             {appliesToAllPlans === false && (
               <Col span={24}>
                 <Form.Item label={vi.promos.planIds} name="planIds" rules={[{
-                  validator: (_, value) => Array.isArray(value) && value.length > 0
-                    ? Promise.resolve() : Promise.reject(new Error('Vui lòng chọn ít nhất 1 gói cước')),
+                  validator: (_, value) => {
+                    if (!Array.isArray(value) || value.length === 0) return Promise.reject(new Error('Vui lòng chọn ít nhất 1 gói cước'));
+                    if (value.length > MAX_PLAN_IDS) return Promise.reject(new Error(`Chọn tối đa ${MAX_PLAN_IDS} gói cước`));
+                    return Promise.resolve();
+                  },
                 }]}>
                   <Select
                     mode="multiple"
