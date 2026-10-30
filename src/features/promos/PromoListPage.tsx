@@ -16,11 +16,13 @@ import { EmptyState } from '../../components/EmptyState';
 import { formatVND } from '../../lib/format';
 import { getErrorMessage } from '../../lib/errors';
 import { vi } from '../../i18n/vi';
+import { useAuth } from '../../auth/AuthContext';
 
 const { Text } = Typography;
 
 export const PromoListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { canWrite, canDelete } = useAuth();
   const {
     params,
     raw,
@@ -144,6 +146,7 @@ export const PromoListPage: React.FC = () => {
           id={record.id!}
           code={record.code ?? ''}
           isActive={Boolean(record.isActive)}
+          disabled={!canWrite}
         />
       ),
     },
@@ -156,15 +159,15 @@ export const PromoListPage: React.FC = () => {
         const disableActionMsg = 'Chỉ được thao tác khi đã tắt';
         return (
           <Space size="small">
-            <Button
+            {canWrite && <Button
               type="text"
               icon={<EditOutlined />}
               size="small"
               title={record.isActive ? disableActionMsg : vi.common.edit}
               disabled={record.isActive}
               onClick={() => navigate(`/promos/${record.id}/edit`)}
-            />
-            <Popconfirm
+            />}
+            {canDelete && <Popconfirm
               title={vi.promos.deleteConfirm}
               okText={vi.common.delete}
               cancelText={vi.common.cancel}
@@ -180,7 +183,7 @@ export const PromoListPage: React.FC = () => {
                 title={record.isActive ? disableActionMsg : vi.common.delete}
                 disabled={record.isActive}
               />
-            </Popconfirm>
+            </Popconfirm>}
           </Space>
         );
       },
@@ -200,7 +203,7 @@ export const PromoListPage: React.FC = () => {
             ? `Tổng số ${data.totalElements} mã khuyến mãi`
             : 'Quản lý danh sách mã khuyến mãi'
         }
-        extra={
+        extra={canWrite ? (
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -209,7 +212,7 @@ export const PromoListPage: React.FC = () => {
           >
             {vi.promos.createTitle}
           </Button>
-        }
+        ) : null}
       />
 
       <div style={{ marginBottom: 16 }}>
@@ -266,7 +269,7 @@ export const PromoListPage: React.FC = () => {
             ) : (
               <EmptyState
                 description={vi.promos.noPromos}
-                showCreate
+                showCreate={canWrite}
                 onCreate={() => navigate('/promos/new')}
               />
             ),

@@ -3,18 +3,21 @@ import type { PlanSummary } from '../api/types';
 let idCounter = 1;
 export const resetIdCounter = () => { idCounter = 1; };
 
-export const createMockPlanSummary = (overrides?: Partial<PlanSummary>): PlanSummary => ({
-  id: idCounter++,
-  code: `PLAN${idCounter}`,
-  name: `Gói cước ${idCounter}`,
-  price: 150000,
-  durationMonths: 1,
-  quotaType: 'PER_CYCLE',
-  dataQuotaMb: 5120,
-  cycleDays: 30,
-  isActive: true,
-  ...overrides,
-});
+export const createMockPlanSummary = (overrides?: Partial<PlanSummary>): PlanSummary => {
+  const id = idCounter++;
+  return {
+    id,
+    code: `PLAN${id}`,
+    name: `Gói cước ${id}`,
+    price: 150000,
+    durationMonths: 1,
+    quotaType: 'PER_CYCLE',
+    dataQuotaMb: 5120,
+    cycleDays: 30,
+    isActive: true,
+    ...overrides,
+  };
+};
 
 export const createMockPlanSummaryList = (count: number): PlanSummary[] => {
   return Array.from({ length: count }, () => createMockPlanSummary());

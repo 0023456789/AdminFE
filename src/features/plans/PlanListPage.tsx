@@ -38,11 +38,13 @@ import { EmptyState } from '../../components/EmptyState';
 import { formatVND, formatDuration, formatQuotaDisplay } from '../../lib/format';
 import { isApiError, getErrorMessage } from '../../lib/errors';
 import { vi } from '../../i18n/vi';
+import { useAuth } from '../../auth/AuthContext';
 
 const { Text } = Typography;
 
 export const PlanListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { canWrite, canDelete } = useAuth();
   const {
     params,
     raw,
@@ -203,6 +205,7 @@ export const PlanListPage: React.FC = () => {
           id={record.id!}
           name={record.name ?? ''}
           isActive={Boolean(record.isActive)}
+          disabled={!canWrite}
         />
       ),
     },
@@ -215,15 +218,15 @@ export const PlanListPage: React.FC = () => {
         const disableActionMsg = 'Chỉ được thao tác khi đã tắt gói';
         return (
           <Space size="small">
-            <Button
+            {canWrite && <Button
               type="text"
               icon={<EditOutlined />}
               size="small"
               title={record.isActive ? disableActionMsg : vi.common.edit}
               disabled={record.isActive}
               onClick={() => navigate(`/plans/${record.id}/edit`)}
-            />
-            <Popconfirm
+            />}
+            {canDelete && <Popconfirm
               title={vi.plans.deleteConfirm}
               okText={vi.common.delete}
               cancelText={vi.common.cancel}
@@ -239,7 +242,7 @@ export const PlanListPage: React.FC = () => {
                 title={record.isActive ? disableActionMsg : vi.common.delete}
                 disabled={record.isActive}
               />
-            </Popconfirm>
+            </Popconfirm>}
           </Space>
         );
       },
@@ -260,7 +263,7 @@ export const PlanListPage: React.FC = () => {
             ? `Tổng số ${data.totalElements} gói cước`
             : 'Quản lý danh sách và cấu hình gói cước'
         }
-        extra={
+        extra={canWrite ? (
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -269,7 +272,7 @@ export const PlanListPage: React.FC = () => {
           >
             {vi.plans.createTitle}
           </Button>
-        }
+        ) : null}
       />
 
       {/* Filter Toolbar */}
@@ -310,7 +313,7 @@ export const PlanListPage: React.FC = () => {
             ) : (
               <EmptyState
                 description={vi.plans.noPlans}
-                showCreate
+                showCreate={canWrite}
                 onCreate={() => navigate('/plans/new')}
               />
             ),

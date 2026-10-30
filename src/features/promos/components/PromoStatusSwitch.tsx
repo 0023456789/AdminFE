@@ -6,15 +6,17 @@ interface PromoStatusSwitchProps {
   id: number;
   code: string;
   isActive: boolean;
+  disabled?: boolean;
 }
 
-export const PromoStatusSwitch: React.FC<PromoStatusSwitchProps> = ({ id, code, isActive }) => {
+export const PromoStatusSwitch: React.FC<PromoStatusSwitchProps> = ({ id, code, isActive, disabled = false }) => {
   const toggleMutation = useTogglePromoStatus();
 
   return (
     <Switch
       checked={isActive}
       loading={toggleMutation.isPending}
+      disabled={disabled || toggleMutation.isPending}
       onChange={(checked) => {
         toggleMutation.mutate({ id, code, isActive: checked });
       }}

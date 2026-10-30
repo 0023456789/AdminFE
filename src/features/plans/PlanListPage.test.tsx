@@ -8,8 +8,11 @@ import { PlanListPage } from './PlanListPage';
 import { server } from '../../test/server';
 import { http, HttpResponse } from 'msw';
 import { vi as i18n } from '../../i18n/vi';
+import { AuthProvider } from '../../auth/AuthContext';
 
 const renderWithProviders = (ui: React.ReactElement) => {
+  const claims = window.btoa(JSON.stringify({ roles: ['ADMIN'], exp: Math.floor(Date.now() / 1000) + 3600 }));
+  window.sessionStorage.setItem('adminsky.accessToken', `header.${claims}.signature`);
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -19,9 +22,11 @@ const renderWithProviders = (ui: React.ReactElement) => {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/plans']}>{ui}</MemoryRouter>
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/plans']}>{ui}</MemoryRouter>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 };
 

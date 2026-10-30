@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import client from './client';
 import { ApiError } from './ApiError';
 import { http, HttpResponse } from 'msw';
 import { server } from '../test/server';
 
 describe('client axios interceptors', () => {
+  beforeAll(() => {
+    client.defaults.baseURL = 'http://localhost/api/v1';
+  });
+
   it('has base URL configured', () => {
     expect(client.defaults.baseURL).toBeDefined();
     expect(client.defaults.headers['Content-Type']).toBe('application/json');
@@ -12,7 +16,7 @@ describe('client axios interceptors', () => {
 
   it('unwraps result when code is 1000', async () => {
     server.use(
-      http.get('/api/v1/test-success', () => {
+      http.get('http://localhost/api/v1/test-success', () => {
         return HttpResponse.json({ code: 1000, result: { success: true } });
       })
     );
@@ -23,7 +27,7 @@ describe('client axios interceptors', () => {
 
   it('throws ApiError when code is not 1000', async () => {
     server.use(
-      http.get('/api/v1/test-business-error', () => {
+      http.get('http://localhost/api/v1/test-business-error', () => {
         return HttpResponse.json({ code: 1101, message: 'Business rule failed' }, { status: 400 });
       })
     );
@@ -42,7 +46,7 @@ describe('client axios interceptors', () => {
 
   it('throws ApiError with code 9999 on network error', async () => {
     server.use(
-      http.get('/api/v1/test-network-error', () => {
+      http.get('http://localhost/api/v1/test-network-error', () => {
         return HttpResponse.error();
       })
     );

@@ -1,4 +1,5 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
 import { beforeAll, afterEach, afterAll } from 'vitest';
 import { server } from './server';
 import { resetMockPlans } from './handlers';
@@ -13,6 +14,7 @@ const queryClient = new QueryClient();
 // Reset any request handlers that we may add during the tests,
 // so they don't affect other tests.
 afterEach(() => {
+  cleanup();
   server.resetHandlers();
   resetMockPlans();
   queryClient.clear();
