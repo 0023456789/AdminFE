@@ -1,13 +1,26 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { login as loginRequest } from '../api/auth';
-import { AUTH_EXPIRED_EVENT, clearAccessToken, getTokenRoles, isTokenExpired, readAccessToken, ACCESS_TOKEN_KEY } from './session';
+import { changePassword as changePasswordRequest, login as loginRequest } from '../api/auth';
+import {
+  AUTH_EXPIRED_EVENT,
+  clearAccessToken,
+  getTokenRoles,
+  getTokenUsername,
+  isPasswordChangeRequired,
+  isTokenExpired,
+  readAccessToken,
+  ACCESS_TOKEN_KEY,
+} from './session';
 
 interface AuthContextValue {
   token: string | null;
+  username: string | null;
   roles: string[];
   canWrite: boolean;
   canDelete: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  /** Phải đổi mật khẩu ban đầu trước khi dùng các trang khác (ADM-07). */
+  passwordChangeRequired: boolean;
+  login: (username: string, password: string) => Promise<{ passwordChangeRequired: boolean }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,16 +41,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(() => {
-    const roles = getTokenRoles(token);
+    const passwordChangeRequired = isPasswordChangeRequired(token);
+    // Token bắt đổi mật khẩu không được backend cấp role nào, nên FE cũng không mở quyền ghi/xoá.
+    const roles = passwordChangeRequired ? [] : getTokenRoles(token);
+    const storeToken = (accessToken: string) => {
+      window.sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+      setToken(accessToken);
+    };
     return {
       token,
+      username: getTokenUsername(token),
       roles,
       canWrite: roles.includes('ADMIN') || roles.includes('OPERATOR'),
       canDelete: roles.includes('ADMIN'),
+      passwordChangeRequired,
       login: async (username, password) => {
         const response = await loginRequest({ username, password });
-        window.sessionStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
-        setToken(response.accessToken);
+        storeToken(response.accessToken);
+        return { passwordChangeRequired: response.passwordChangeRequired === true };
+      },
+      changePassword: async (currentPassword, newPassword) => {
+        const response = await changePasswordRequest({ currentPassword, newPassword });
+        storeToken(response.accessToken);
       },
       logout: () => {
         clearAccessToken();

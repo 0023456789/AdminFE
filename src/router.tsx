@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import App from './App';
 import { NotFoundPage } from './components/NotFoundPage';
-import { RequireAuth, RequireWriter } from './components/AuthRoutes';
+import { CHANGE_PASSWORD_PATH, RequireAuth, RequireWriter } from './components/AuthRoutes';
 import { LoginPage } from './features/auth/LoginPage';
 
 export const router = createBrowserRouter([
@@ -13,6 +13,8 @@ export const router = createBrowserRouter([
     path: '/',
     element: <RequireAuth />,
     children: [
+      // Trang riêng, ngoài layout: khi còn phải đổi mật khẩu ban đầu, menu và các API khác đều bị chặn (ADM-07).
+      { path: CHANGE_PASSWORD_PATH.slice(1), lazy: () => import('./features/auth/ChangePasswordPage') },
       {
         element: <App />,
         children: [

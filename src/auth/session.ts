@@ -9,29 +9,35 @@ export function clearAccessToken(): void {
   if (typeof window !== 'undefined') window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
-export function getTokenRoles(token: string | null): string[] {
-  if (!token) return [];
+function readClaims(token: string | null): Record<string, unknown> | null {
+  if (!token) return null;
   try {
     const payload = token.split('.')[1];
-    if (!payload) return [];
+    if (!payload) return null;
     const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const claims = JSON.parse(window.atob(normalized)) as { roles?: unknown };
-    return Array.isArray(claims.roles)
-      ? claims.roles.filter((role): role is string => typeof role === 'string')
-      : [];
+    const claims = JSON.parse(window.atob(normalized)) as unknown;
+    return claims && typeof claims === 'object' ? (claims as Record<string, unknown>) : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
+export function getTokenRoles(token: string | null): string[] {
+  const roles = readClaims(token)?.roles;
+  return Array.isArray(roles) ? roles.filter((role): role is string => typeof role === 'string') : [];
+}
+
+export function getTokenUsername(token: string | null): string | null {
+  const subject = readClaims(token)?.sub;
+  return typeof subject === 'string' ? subject : null;
+}
+
+/** Token của tài khoản còn phải đổi mật khẩu ban đầu: backend chỉ cho gọi /auth/change-password (ADM-07). */
+export function isPasswordChangeRequired(token: string | null): boolean {
+  return readClaims(token)?.pwd_change_required === true;
+}
+
 export function isTokenExpired(token: string): boolean {
-  try {
-    const payload = token.split('.')[1];
-    if (!payload) return true;
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const claims = JSON.parse(window.atob(normalized)) as { exp?: unknown };
-    return typeof claims.exp !== 'number' || claims.exp * 1000 <= Date.now();
-  } catch {
-    return true;
-  }
+  const exp = readClaims(token)?.exp;
+  return typeof exp !== 'number' || exp * 1000 <= Date.now();
 }
